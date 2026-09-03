@@ -42,7 +42,7 @@
 	<key>GCSupportsControllerUserInteraction</key>
 	<true/>
 	<key>LSMinimumSystemVersion</key>
-	<string>13.0</string>
+	<string>15.0</string>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>Single Sense reads the system audio output in memory to synchronize controller lighting and haptics with your media. Audio is analyzed in real time and never saved or transmitted.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>

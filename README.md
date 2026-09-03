@@ -87,7 +87,7 @@ Everything is reachable from the menu bar item too, which displays the live batt
 
 ## Getting started
 
-You'll need a Mac running **macOS 14.2 (Sonoma)** or later, with Xcode installed.
+You'll need a Mac running **macOS 15 (Sequoia)** or later, with Xcode installed.
 
 ```bash
 git clone https://github.com/ry-diffusion/SingleSense.git
