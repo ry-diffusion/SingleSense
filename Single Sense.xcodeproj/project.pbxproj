@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		270F462D3049ECAE0065BD5B /* Single Sense Icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */; };
+		270F462E3049ECAE0065BD5B /* Single Sense Icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */; };
 		5E0000000000000000000002 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000001 /* MenuBarController.swift */; };
 		5E0000000000000000000004 /* SingleSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000003 /* SingleSenseApp.swift */; };
 		5E0000000000000000000007 /* ControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000006 /* ControllerState.swift */; };
@@ -64,6 +66,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Single Sense Icon.icon"; sourceTree = "<group>"; };
 		5E0000000000000000000001 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		5E0000000000000000000003 /* SingleSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleSenseApp.swift; sourceTree = "<group>"; };
 		5E0000000000000000000006 /* ControllerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerState.swift; sourceTree = "<group>"; };
@@ -110,8 +113,8 @@
 		5E0000000000000000000064 /* ValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationTests.swift; sourceTree = "<group>"; };
 		5E0000000000000000000067 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5E0000000000000000000069 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		5E000000000000000000006A /* SingleSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SingleSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		5E000000000000000000006B /* SingleSenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SingleSenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E000000000000000000006A /* Single Sense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Single Sense.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E000000000000000000006B /* Single SenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Single SenseTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -299,8 +302,8 @@
 		5E000000000000000000006C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5E000000000000000000006A /* SingleSense.app */,
-				5E000000000000000000006B /* SingleSenseTests.xctest */,
+				5E000000000000000000006A /* Single Sense.app */,
+				5E000000000000000000006B /* Single SenseTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -308,20 +311,21 @@
 		5E000000000000000000006D = {
 			isa = PBXGroup;
 			children = (
-				5E0000000000000000000053 /* SingleSense */,
-				5E0000000000000000000066 /* SingleSenseTests */,
-				5E0000000000000000000068 /* Resources */,
+				270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */,
 				5E0000000000000000000069 /* README.md */,
 				5E000000000000000000006C /* Products */,
+				5E0000000000000000000068 /* Resources */,
+				5E0000000000000000000053 /* SingleSense */,
+				5E0000000000000000000066 /* SingleSenseTests */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5E000000000000000000007E /* SingleSense */ = {
+		5E000000000000000000007E /* Single Sense */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5E0000000000000000000079 /* Build configuration list for PBXNativeTarget "SingleSense" */;
+			buildConfigurationList = 5E0000000000000000000079 /* Build configuration list for PBXNativeTarget "Single Sense" */;
 			buildPhases = (
 				5E000000000000000000006E /* Sources */,
 				5E000000000000000000006F /* Frameworks */,
@@ -331,14 +335,14 @@
 			);
 			dependencies = (
 			);
-			name = SingleSense;
+			name = "Single Sense";
 			productName = SingleSense;
-			productReference = 5E000000000000000000006A /* SingleSense.app */;
+			productReference = 5E000000000000000000006A /* Single Sense.app */;
 			productType = "com.apple.product-type.application";
 		};
-		5E0000000000000000000081 /* SingleSenseTests */ = {
+		5E0000000000000000000081 /* Single SenseTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5E000000000000000000007C /* Build configuration list for PBXNativeTarget "SingleSenseTests" */;
+			buildConfigurationList = 5E000000000000000000007C /* Build configuration list for PBXNativeTarget "Single SenseTests" */;
 			buildPhases = (
 				5E0000000000000000000071 /* Sources */,
 				5E0000000000000000000072 /* Frameworks */,
@@ -349,9 +353,9 @@
 			dependencies = (
 				5E0000000000000000000080 /* PBXTargetDependency */,
 			);
-			name = SingleSenseTests;
+			name = "Single SenseTests";
 			productName = SingleSenseTests;
-			productReference = 5E000000000000000000006B /* SingleSenseTests.xctest */;
+			productReference = 5E000000000000000000006B /* Single SenseTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -373,7 +377,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5E0000000000000000000076 /* Build configuration list for PBXProject "SingleSense" */;
+			buildConfigurationList = 5E0000000000000000000076 /* Build configuration list for PBXProject "Single Sense" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -386,8 +390,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5E000000000000000000007E /* SingleSense */,
-				5E0000000000000000000081 /* SingleSenseTests */,
+				5E000000000000000000007E /* Single Sense */,
+				5E0000000000000000000081 /* Single SenseTests */,
 			);
 		};
 /* End PBXProject section */
@@ -397,6 +401,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				270F462E3049ECAE0065BD5B /* Single Sense Icon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +409,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				270F462D3049ECAE0065BD5B /* Single Sense Icon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,7 +479,7 @@
 /* Begin PBXTargetDependency section */
 		5E0000000000000000000080 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 5E000000000000000000007E /* SingleSense */;
+			target = 5E000000000000000000007E /* Single Sense */;
 			targetProxy = 5E000000000000000000007F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -602,6 +608,8 @@
 		5E0000000000000000000077 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Single Sense Icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -613,16 +621,20 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Single Sense";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = zesmoi.SIngleSense;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 2026.9.0;
+				PRODUCT_BUNDLE_IDENTIFIER = br.com.zesmoi.SIngleSense;
 				PRODUCT_MODULE_NAME = SingleSense;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Debug;
@@ -630,6 +642,8 @@
 		5E0000000000000000000078 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Single Sense Icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -641,16 +655,20 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Single Sense";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = zesmoi.SIngleSense;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 2026.9.0;
+				PRODUCT_BUNDLE_IDENTIFIER = br.com.zesmoi.SIngleSense;
 				PRODUCT_MODULE_NAME = SingleSense;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
@@ -671,13 +689,15 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.singlesense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleSense.app/Contents/MacOS/SingleSense";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Single Sense.app/Contents/MacOS/Single Sense";
 			};
 			name = Debug;
 		};
@@ -697,20 +717,22 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.singlesense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleSense.app/Contents/MacOS/SingleSense";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Single Sense.app/Contents/MacOS/Single Sense";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5E0000000000000000000076 /* Build configuration list for PBXProject "SingleSense" */ = {
+		5E0000000000000000000076 /* Build configuration list for PBXProject "Single Sense" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5E0000000000000000000074 /* Debug */,
@@ -719,7 +741,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5E0000000000000000000079 /* Build configuration list for PBXNativeTarget "SingleSense" */ = {
+		5E0000000000000000000079 /* Build configuration list for PBXNativeTarget "Single Sense" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5E0000000000000000000077 /* Debug */,
@@ -728,7 +750,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5E000000000000000000007C /* Build configuration list for PBXNativeTarget "SingleSenseTests" */ = {
+		5E000000000000000000007C /* Build configuration list for PBXNativeTarget "Single SenseTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5E000000000000000000007A /* Debug */,

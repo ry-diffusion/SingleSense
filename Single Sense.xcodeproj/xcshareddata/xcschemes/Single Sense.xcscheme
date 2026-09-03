@@ -15,17 +15,17 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "5E000000000000000000007E"
-               BuildableName = "SingleSense.app"
-               BlueprintName = "SingleSense"
-               ReferencedContainer = "container:SingleSense.xcodeproj">
+               BuildableName = "Single Sense.app"
+               BlueprintName = "Single Sense"
+               ReferencedContainer = "container:Single Sense.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
       buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = ""
+      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
       <Testables>
@@ -34,9 +34,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "5E0000000000000000000081"
-               BuildableName = "SingleSenseTests.xctest"
-               BlueprintName = "SingleSenseTests"
-               ReferencedContainer = "container:SingleSense.xcodeproj">
+               BuildableName = "Single SenseTests.xctest"
+               BlueprintName = "Single SenseTests"
+               ReferencedContainer = "container:Single Sense.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5E000000000000000000007E"
-            BuildableName = "SingleSense.app"
-            BlueprintName = "SingleSense"
-            ReferencedContainer = "container:SingleSense.xcodeproj">
+            BuildableName = "Single Sense.app"
+            BlueprintName = "Single Sense"
+            ReferencedContainer = "container:Single Sense.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -73,9 +73,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5E000000000000000000007E"
-            BuildableName = "SingleSense.app"
-            BlueprintName = "SingleSense"
-            ReferencedContainer = "container:SingleSense.xcodeproj">
+            BuildableName = "Single Sense.app"
+            BlueprintName = "Single Sense"
+            ReferencedContainer = "container:Single Sense.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
