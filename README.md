@@ -26,7 +26,9 @@ Two automatic modes that earn their keep day to day:
 
 ### 🎵 Sync with your music
 
-Turn on **Music Sync** and the controller follows whatever your Mac is playing — Spotify, Apple Music, a browser tab, a game. The source doesn't matter.
+**Music Sync** has its own section in the sidebar and its own switch, because it isn't a lighting effect — it drives three separate parts of the controller, and you choose which ones. It follows whatever your Mac is playing: Spotify, Apple Music, a browser tab, a game. The source doesn't matter.
+
+**The light bar**, if you let it. While that's on, the music takes the bar over from the lighting mode; turn it off and your static colour, rainbow or breathing stays exactly as it was while the music drives only the rest.
 
 | Style | How it looks |
 |---|---|
@@ -35,9 +37,9 @@ Turn on **Music Sync** and the controller follows whatever your Mac is playing �
 | **Hue Sweep** | Bass-heavy music runs warm, bright music runs cool |
 | **Beat Flash** | Dark between beats, lighting up on each one |
 
-The **five player LEDs** join in as a meter — filling from the left, growing outward from the centre, or flashing on the beat.
+**The five player LEDs**, as a meter — filling from the left, growing outward from the centre, or flashing on the beat. Leave it on *Fixed Pattern* and the row keeps the player number you set in Lightbar.
 
-And if you want to *feel* the music, switch on **rumble**: bass goes to the heavy motor on the left, treble to the light one on the right. It ships off, because continuous rumble drains the battery noticeably faster.
+**The rumble motors**, if you want to *feel* the music: bass goes to the heavy motor on the left, treble to the light one on the right. The intensity slider is a ceiling, and the music decides how much of it gets used moment to moment. It ships off, because continuous rumble drains the battery noticeably faster.
 
 > The first time, macOS will ask for **System Audio Recording** permission. Single Sense uses Apple's native Core Audio Process Taps to listen to the system mix directly — no screen or video recording permission is needed.
 
@@ -127,7 +129,7 @@ xcodebuild -project "Single Sense.xcodeproj" -scheme "Single Sense" test    # ru
 
 Signing is set to **Sign to Run Locally** (ad-hoc), so it builds on a clean machine with no developer account. Set your team in *Signing & Capabilities* if you want a stable signature.
 
-Talking to the controller is done over raw HID, following the Linux kernel driver (`hid-playstation.c`) and `dualsensectl` as the reference for the packet format. The test suite has **101 tests** checking, byte by byte, what goes out to the controller — offsets, enable bits, checksum, the encoding of every trigger effect, sensor calibration and the trackpad gestures.
+Talking to the controller is done over raw HID, following the Linux kernel driver (`hid-playstation.c`) and `dualsensectl` as the reference for the packet format. The test suite has **110 tests** checking, byte by byte, what goes out to the controller — offsets, enable bits, checksum, the encoding of every trigger effect, sensor calibration and the trackpad gestures.
 
 ```
 Sources/SingleSense/

@@ -107,63 +107,22 @@ public struct LightbarConfiguration: Codable, Equatable {
     public var playerLEDBrightness: PlayerLEDBrightness = .medium
     public var micLEDMode: MicLEDMode = .off
 
-    // Music sync
-    public var musicSyncStyle: MusicSyncStyle = .spectrum
-    public var playerLEDAudioStyle: PlayerLEDAudioStyle = .centerSpread
-    // Off by default: continuous rumble is intrusive and eats the battery, so
-    // it is something the user opts into rather than out of.
-    public var musicHapticsStyle: MusicHapticsStyle = .off
-    public var musicHapticsIntensity: Double = 0.6
-    public var audioSensitivity: Double = 1.0   // 0.25 ... 4.0
-    public var audioSmoothing: Double = 0.35    // 0.0 (snappy) ... 1.0 (damped)
-    public var audioMinimumBrightness: Double = 0.05
-
     public init() {}
 }
 
 extension LightbarConfiguration {
     /// Resolves the player indicator row to a raw bitmask.
     ///
-    /// `level` and `beat` come from the audio analysis and are ignored unless
-    /// Music Sync is the active lighting mode.
-    public func playerLEDMask(level: Float, beat: Float) -> UInt8 {
+    /// `level` and `beat` come from the audio analysis; they only reach the row
+    /// when `music` says the music is driving it, and otherwise the fixed
+    /// player pattern applies.
+    public func playerLEDMask(
+        music: MusicSyncConfiguration = MusicSyncConfiguration(),
+        level: Float = 0,
+        beat: Float = 0
+    ) -> UInt8 {
         // "Off" brightness darkens the row whatever the pattern says.
         guard !playerLEDBrightness.extinguishesLEDs else { return 0 }
-        guard mode == .musicSync else { return playerLEDMode.bitmask }
-
-        switch playerLEDAudioStyle {
-        case .fixed:
-            return playerLEDMode.bitmask
-        case .vuMeter:
-            return PlayerLEDIndicator.bar(lampsLit: PlayerLEDIndicator.lamps(for: level))
-        case .centerSpread:
-            return PlayerLEDIndicator.centredPatterns[PlayerLEDIndicator.lamps(for: level)]
-        case .beatPulse:
-            return beat > 0.35 ? 0x1F : 0x00
-        }
-    }
-}
-
-extension LightbarConfiguration {
-    /// Resolves the two rumble motors from the audio analysis.
-    /// Returns silence unless Music Sync is active with haptics switched on.
-    public func musicRumble(bass: Float, mid: Float, treble: Float, beat: Float) -> (left: Float, right: Float) {
-        guard mode == .musicSync, musicHapticsStyle != .off else { return (0, 0) }
-        let gain = Float(musicHapticsIntensity.isFinite ? min(max(musicHapticsIntensity, 0), 1) : 0)
-        guard gain > 0 else { return (0, 0) }
-
-        switch musicHapticsStyle {
-        case .off:
-            return (0, 0)
-        case .bassKick:
-            return (RumbleCurve.shape(bass) * gain, 0)
-        case .fullRange:
-            // Mids are folded in at half weight so vocals do not drown out
-            // the cymbals and hats the light motor is good at conveying.
-            let highs = max(treble, mid * 0.5)
-            return (RumbleCurve.shape(bass) * gain, RumbleCurve.shape(highs) * gain)
-        case .beatPunch:
-            return (RumbleCurve.shape(beat) * gain, 0)
-        }
+        return music.playerLEDMask(level: level, beat: beat) ?? playerLEDMode.bitmask
     }
 }

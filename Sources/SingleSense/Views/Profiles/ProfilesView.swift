@@ -72,6 +72,7 @@ public struct ProfilesView: View {
                                     Button("Save Current Settings Here") {
                                         var updated = profile
                                         updated.lightbar = manager.lightbarConfig
+                                        updated.musicSync = manager.musicSyncConfig
                                         updated.leftTrigger = manager.leftTriggerConfig
                                         updated.rightTrigger = manager.rightTriggerConfig
                                         updated.triggersLinked = manager.triggersLinked
@@ -166,6 +167,7 @@ public struct ProfilesView: View {
                             name: newProfileName,
                             description: newProfileDescription,
                             lightbar: manager.lightbarConfig,
+                            musicSync: manager.musicSyncConfig,
                             leftTrigger: manager.leftTriggerConfig,
                             rightTrigger: manager.rightTriggerConfig,
                             triggersLinked: manager.triggersLinked,

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		270F462D3049ECAE0065BD5B /* Single Sense Icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */; };
 		270F462E3049ECAE0065BD5B /* Single Sense Icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */; };
+		270F4647304A32E80065BD5B /* MusicSyncConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270F4646304A32E80065BD5B /* MusicSyncConfiguration.swift */; };
+		270F464A304A33F20065BD5B /* MusicSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270F4649304A33F20065BD5B /* MusicSyncView.swift */; };
 		5E0000000000000000000002 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000001 /* MenuBarController.swift */; };
 		5E0000000000000000000004 /* SingleSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000003 /* SingleSenseApp.swift */; };
 		5E0000000000000000000007 /* ControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000006 /* ControllerState.swift */; };
@@ -67,6 +69,8 @@
 
 /* Begin PBXFileReference section */
 		270F462C3049ECAE0065BD5B /* Single Sense Icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Single Sense Icon.icon"; sourceTree = "<group>"; };
+		270F4646304A32E80065BD5B /* MusicSyncConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSyncConfiguration.swift; sourceTree = "<group>"; };
+		270F4649304A33F20065BD5B /* MusicSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSyncView.swift; sourceTree = "<group>"; };
 		5E0000000000000000000001 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		5E0000000000000000000003 /* SingleSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleSenseApp.swift; sourceTree = "<group>"; };
 		5E0000000000000000000006 /* ControllerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerState.swift; sourceTree = "<group>"; };
@@ -135,6 +139,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		270F4648304A33F20065BD5B /* MusicSync */ = {
+			isa = PBXGroup;
+			children = (
+				270F4649304A33F20065BD5B /* MusicSyncView.swift */,
+			);
+			path = MusicSync;
+			sourceTree = "<group>";
+		};
 		5E0000000000000000000005 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -152,6 +164,7 @@
 				5E000000000000000000000A /* LightbarConfiguration.swift */,
 				5E000000000000000000000C /* Profile.swift */,
 				5E000000000000000000000E /* TriggerConfiguration.swift */,
+				270F4646304A32E80065BD5B /* MusicSyncConfiguration.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -258,6 +271,7 @@
 				5E0000000000000000000048 /* Trackpad */,
 				5E000000000000000000004F /* Triggers */,
 				5E0000000000000000000050 /* MainView.swift */,
+				270F4648304A33F20065BD5B /* MusicSync */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -421,6 +435,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E0000000000000000000002 /* MenuBarController.swift in Sources */,
+				270F464A304A33F20065BD5B /* MusicSyncView.swift in Sources */,
 				5E0000000000000000000004 /* SingleSenseApp.swift in Sources */,
 				5E0000000000000000000007 /* ControllerState.swift in Sources */,
 				5E0000000000000000000009 /* Enums.swift in Sources */,
@@ -437,6 +452,7 @@
 				5E0000000000000000000020 /* PermissionMonitor.swift in Sources */,
 				5E0000000000000000000022 /* ProfileStorage.swift in Sources */,
 				5E0000000000000000000024 /* PublishScheduling.swift in Sources */,
+				270F4647304A32E80065BD5B /* MusicSyncConfiguration.swift in Sources */,
 				5E0000000000000000000026 /* RainbowEngine.swift in Sources */,
 				5E0000000000000000000028 /* SettingsStore.swift in Sources */,
 				5E000000000000000000002A /* TrackpadGestures.swift in Sources */,

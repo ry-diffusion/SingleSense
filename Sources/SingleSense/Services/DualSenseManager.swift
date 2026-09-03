@@ -8,6 +8,7 @@ public final class DualSenseManager: ObservableObject {
     
     @Published public var controllerState = ControllerState()
     @Published public var lightbarConfig = LightbarConfiguration()
+    @Published public var musicSyncConfig = MusicSyncConfiguration()
     @Published public var leftTriggerConfig = SingleTriggerConfig()
     @Published public var rightTriggerConfig = SingleTriggerConfig()
     @Published public var triggersLinked: Bool = false
@@ -62,12 +63,18 @@ public final class DualSenseManager: ObservableObject {
 
         let saved = SettingsStore.shared.load()
         lightbarConfig = saved.lightbar
+        musicSyncConfig = saved.musicSync
         leftTriggerConfig = saved.leftTrigger.sanitized()
         rightTriggerConfig = saved.rightTrigger.sanitized()
         triggersLinked = saved.triggersLinked
         leftRumbleIntensity = DSScale.clamp01(saved.leftRumble)
         rightRumbleIntensity = DSScale.clamp01(saved.rightRumble)
-        currentColor = RainbowEngine.shared.calculateColor(for: lightbarConfig, elapsed: 0, controllerState: controllerState)
+        currentColor = RainbowEngine.shared.calculateColor(
+            for: lightbarConfig,
+            music: musicSyncConfig,
+            elapsed: 0,
+            controllerState: controllerState
+        )
 
         let trackpad = TrackpadService.shared
         trackpad.sensitivity = saved.trackpadSensitivity
@@ -87,6 +94,7 @@ public final class DualSenseManager: ObservableObject {
     private func setupPersistence() {
         let manager = Publishers.MergeMany(
             $lightbarConfig.map { _ in () }.eraseToAnyPublisher(),
+            $musicSyncConfig.map { _ in () }.eraseToAnyPublisher(),
             $leftTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
             $rightTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
             $triggersLinked.map { _ in () }.eraseToAnyPublisher(),
@@ -121,6 +129,7 @@ public final class DualSenseManager: ObservableObject {
     private func currentSessionSettings() -> SessionSettings {
         var settings = SessionSettings()
         settings.lightbar = lightbarConfig
+        settings.musicSync = musicSyncConfig
         settings.leftTrigger = leftTriggerConfig
         settings.rightTrigger = rightTriggerConfig
         settings.triggersLinked = triggersLinked
@@ -148,8 +157,8 @@ public final class DualSenseManager: ObservableObject {
         GCController.startWirelessControllerDiscovery()
         checkInitialControllers()
         // Restored state only reached memory; this puts it on the hardware and
-        // starts the audio tap if the saved mode needs it.
-        applyLightbarConfiguration(force: true)
+        // starts the audio tap if Music Sync was left switched on.
+        applyMusicSyncConfiguration(force: true)
         applyTriggerConfiguration(force: true)
     }
     
@@ -630,13 +639,12 @@ public final class DualSenseManager: ObservableObject {
         }
     }
     
-    /// The rumble pair the music is currently asking for, or nil when music
-    /// haptics are not driving the motors.
+    /// The rumble pair the music is currently asking for, or nil when the
+    /// music is not driving the motors.
     private func currentMusicRumble() -> (left: Float, right: Float)? {
-        guard lightbarConfig.mode == .musicSync,
-              lightbarConfig.musicHapticsStyle != .off else { return nil }
+        guard musicSyncConfig.isDrivingRumble else { return nil }
         let levels = AudioReactiveEngine.shared.levels
-        return lightbarConfig.musicRumble(
+        return musicSyncConfig.rumble(
             bass: levels.bass,
             mid: levels.mid,
             treble: levels.treble,
@@ -647,21 +655,35 @@ public final class DualSenseManager: ObservableObject {
     /// The indicator row's bitmask for this instant, which under Music Sync
     /// tracks the audio rather than a fixed player pattern.
     private func currentPlayerLEDMask() -> UInt8 {
-        let levels = lightbarConfig.mode == .musicSync
+        let levels = musicSyncConfig.isDrivingPlayerLEDs
             ? AudioReactiveEngine.shared.levels
             : .silent
-        return lightbarConfig.playerLEDMask(level: levels.overall, beat: levels.beat)
+        return lightbarConfig.playerLEDMask(
+            music: musicSyncConfig,
+            level: levels.overall,
+            beat: levels.beat
+        )
+    }
+
+    /// Pushes the Music Sync settings to the analysis engine and re-resolves
+    /// the hardware, which the music may now be driving.
+    public func applyMusicSyncConfiguration(force: Bool = false) {
+        // The audio tap is only worth its CPU while something is listening.
+        let audio = AudioReactiveEngine.shared
+        audio.sensitivity = Float(musicSyncConfig.sensitivity)
+        audio.smoothing = Float(musicSyncConfig.smoothing)
+        audio.setActive(musicSyncConfig.needsAudioCapture)
+
+        applyLightbarConfiguration(force: force)
     }
 
     public func applyLightbarConfiguration(force: Bool = false) {
-        // The audio tap is only worth its CPU while the lightbar is actually
-        // driven by it.
-        let audio = AudioReactiveEngine.shared
-        audio.sensitivity = Float(lightbarConfig.audioSensitivity)
-        audio.smoothing = Float(lightbarConfig.audioSmoothing)
-        audio.setActive(lightbarConfig.mode == .musicSync)
-
-        let color = RainbowEngine.shared.calculateColor(for: lightbarConfig, elapsed: 0, controllerState: controllerState)
+        let color = RainbowEngine.shared.calculateColor(
+            for: lightbarConfig,
+            music: musicSyncConfig,
+            elapsed: 0,
+            controllerState: controllerState
+        )
         currentColor = color
         publishOnNextRunLoopTurn { [weak self] in
             self?.controllerState.currentLightbarColor = color
@@ -807,11 +829,14 @@ public final class DualSenseManager: ObservableObject {
     
     public func applyProfile(_ profile: ControllerProfile) {
         self.lightbarConfig = profile.lightbar
+        self.musicSyncConfig = profile.musicSync
         self.leftTriggerConfig = profile.leftTrigger.sanitized()
         self.rightTriggerConfig = profile.rightTrigger.sanitized()
         self.triggersLinked = profile.triggersLinked
 
-        applyLightbarConfiguration()
+        // Goes through the Music Sync path so the audio tap opens or closes
+        // with the profile instead of keeping the previous one's state.
+        applyMusicSyncConfiguration()
         applyTriggerConfiguration()
         // setRumble clamps, and it is what assigns the two intensity fields —
         // assigning them directly here would let an out-of-range profile value

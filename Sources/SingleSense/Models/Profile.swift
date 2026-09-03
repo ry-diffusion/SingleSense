@@ -6,6 +6,7 @@ public struct ControllerProfile: Codable, Identifiable, Equatable {
     public var description: String
     public var iconName: String
     public var lightbar: LightbarConfiguration
+    public var musicSync: MusicSyncConfiguration
     public var leftTrigger: SingleTriggerConfig
     public var rightTrigger: SingleTriggerConfig
     public var triggersLinked: Bool
@@ -13,13 +14,14 @@ public struct ControllerProfile: Codable, Identifiable, Equatable {
     public var rightRumble: Float
     public var createdAt: Date
     public var updatedAt: Date
-    
+
     public init(
         id: UUID = UUID(),
         name: String,
         description: String = "",
         iconName: String = "gamecontroller.fill",
         lightbar: LightbarConfiguration = LightbarConfiguration(),
+        musicSync: MusicSyncConfiguration = MusicSyncConfiguration(),
         leftTrigger: SingleTriggerConfig = SingleTriggerConfig(),
         rightTrigger: SingleTriggerConfig = SingleTriggerConfig(),
         triggersLinked: Bool = false,
@@ -33,6 +35,7 @@ public struct ControllerProfile: Codable, Identifiable, Equatable {
         self.description = description
         self.iconName = iconName
         self.lightbar = lightbar
+        self.musicSync = musicSync
         self.leftTrigger = leftTrigger
         self.rightTrigger = rightTrigger
         self.triggersLinked = triggersLinked
@@ -40,6 +43,37 @@ public struct ControllerProfile: Codable, Identifiable, Equatable {
         self.rightRumble = rightRumble
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+
+    /// Decoding falls back per field, so a profile saved by an older build —
+    /// one with no `musicSync` key, and Music Sync still expressed as a
+    /// lighting mode — keeps working.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let fallback = ControllerProfile(name: "")
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
+        iconName = try container.decodeIfPresent(String.self, forKey: .iconName) ?? fallback.iconName
+        lightbar = try container.decodeIfPresent(LightbarConfiguration.self, forKey: .lightbar) ?? fallback.lightbar
+
+        if let stored = (try? container.decodeIfPresent(MusicSyncConfiguration.self, forKey: .musicSync)) ?? nil {
+            musicSync = stored
+        } else if let legacy = try? container.decode(MusicSyncConfiguration.Legacy.self, forKey: .lightbar) {
+            musicSync = .migrated(from: legacy)
+        } else {
+            musicSync = fallback.musicSync
+        }
+        // The bar needs a mode it can show once the music stops driving it.
+        if lightbar.mode == .musicSync { lightbar.mode = .staticColor }
+
+        leftTrigger = try container.decodeIfPresent(SingleTriggerConfig.self, forKey: .leftTrigger) ?? fallback.leftTrigger
+        rightTrigger = try container.decodeIfPresent(SingleTriggerConfig.self, forKey: .rightTrigger) ?? fallback.rightTrigger
+        triggersLinked = try container.decodeIfPresent(Bool.self, forKey: .triggersLinked) ?? false
+        leftRumble = DSScale.clamp01(try container.decodeIfPresent(Float.self, forKey: .leftRumble) ?? 0)
+        rightRumble = DSScale.clamp01(try container.decodeIfPresent(Float.self, forKey: .rightRumble) ?? 0)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
     }
 }
 

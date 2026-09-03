@@ -7,6 +7,7 @@ import Combine
 /// to be rebuilt from defaults on every launch.
 public struct SessionSettings: Codable, Equatable {
     public var lightbar = LightbarConfiguration()
+    public var musicSync = MusicSyncConfiguration()
     public var leftTrigger = SingleTriggerConfig()
     public var rightTrigger = SingleTriggerConfig()
     public var triggersLinked = false
@@ -28,6 +29,19 @@ public struct SessionSettings: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let fallback = SessionSettings()
         lightbar = try container.decodeIfPresent(LightbarConfiguration.self, forKey: .lightbar) ?? fallback.lightbar
+        // Its own key when the file was written after the split, and the old
+        // music fields inside `lightbar` when it was written before.
+        if let stored = (try? container.decodeIfPresent(MusicSyncConfiguration.self, forKey: .musicSync)) ?? nil {
+            musicSync = stored
+        } else if let legacy = try? container.decode(MusicSyncConfiguration.Legacy.self, forKey: .lightbar) {
+            musicSync = .migrated(from: legacy)
+        } else {
+            musicSync = fallback.musicSync
+        }
+        // Music Sync used to be a lighting mode. Now that it drives the bar
+        // from the outside, leave the mode on one the bar can actually show
+        // once the music stops.
+        if lightbar.mode == .musicSync { lightbar.mode = .staticColor }
         leftTrigger = try container.decodeIfPresent(SingleTriggerConfig.self, forKey: .leftTrigger) ?? fallback.leftTrigger
         rightTrigger = try container.decodeIfPresent(SingleTriggerConfig.self, forKey: .rightTrigger) ?? fallback.rightTrigger
         triggersLinked = try container.decodeIfPresent(Bool.self, forKey: .triggersLinked) ?? fallback.triggersLinked

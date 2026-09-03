@@ -3,6 +3,7 @@ import SwiftUI
 public enum NavigationItem: String, CaseIterable, Identifiable {
     case dashboard = "Dashboard"
     case lightbar = "Lightbar & LEDs"
+    case musicSync = "Music Sync"
     case triggers = "Adaptive Triggers"
     case haptics = "Haptics & Vibration"
     case motion = "Motion & Gyro"
@@ -15,6 +16,7 @@ public enum NavigationItem: String, CaseIterable, Identifiable {
         switch self {
         case .dashboard: return "gauge.medium"
         case .lightbar: return "rainbow"
+        case .musicSync: return "waveform"
         case .triggers: return "scope"
         case .haptics: return "waveform.path.ecg"
         case .motion: return "gyroscope"
@@ -77,6 +79,8 @@ public struct MainView: View {
                     DashboardView()
                 case .lightbar:
                     LightbarStudioView()
+                case .musicSync:
+                    MusicSyncView()
                 case .triggers:
                     TriggerStudioView()
                 case .haptics:
@@ -98,7 +102,7 @@ public struct MainView: View {
 
     @ViewBuilder
     private var musicSyncBackground: some View {
-        if manager.lightbarConfig.mode == .musicSync {
+        if manager.musicSyncConfig.isEnabled {
             let primary = rainbowEngine.currentDisplayColor.color
             let beat = Double(audioEngine.displayLevels.beat)
             let overall = Double(audioEngine.displayLevels.overall)

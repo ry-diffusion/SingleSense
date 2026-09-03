@@ -36,10 +36,18 @@ public enum LightingMode: String, Codable, CaseIterable, Identifiable {
     case batteryReactive = "Battery Gauge"
     case triggerReactive = "Trigger Reactive"
     case strobe = "Cyberpunk Strobe"
+    /// Legacy: Music Sync is a feature of its own now, with its own switch and
+    /// its own section, because it drives the indicator row and the motors as
+    /// well as the light bar. The case survives so that a session or profile
+    /// saved before the split still decodes and can be migrated.
     case musicSync = "Music Sync"
-    
+
     public var id: String { rawValue }
-    
+
+    /// The modes offered in the UI. `musicSync` is not one of them: it is
+    /// reached from the Music Sync section instead.
+    public static let selectable: [LightingMode] = allCases.filter { $0 != .musicSync }
+
     public var iconName: String {
         switch self {
         case .staticColor: return "paintpalette.fill"
@@ -179,8 +187,7 @@ public enum MusicSyncStyle: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-/// What the five-lamp player indicator row does while Music Sync is driving
-/// the lightbar.
+/// What the five-lamp player indicator row does while Music Sync is running.
 public enum PlayerLEDAudioStyle: String, Codable, CaseIterable, Identifiable {
     /// Leave the row on the pattern chosen in the Player Indicator section.
     case fixed = "Fixed Pattern"
@@ -229,11 +236,6 @@ public enum PlayerLEDIndicator {
 }
 
 /// How the rumble motors follow the audio while Music Sync is active.
-///
-/// The two motors are not interchangeable: the left one is a heavy
-/// low-frequency weight, the right a lighter, faster one. Mapping bass to the
-/// left and the upper bands to the right is what makes the effect read as the
-/// music rather than as undifferentiated buzzing.
 public enum MusicHapticsStyle: String, Codable, CaseIterable, Identifiable {
     case off = "Off"
     /// Heavy motor only, following the bass band.
