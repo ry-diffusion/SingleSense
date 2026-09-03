@@ -4,6 +4,7 @@ import AppKit
 @main
 struct SingleSenseApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @ObservedObject var controllerState = DualSenseManager.shared.controllerState
     
     var body: some Scene {
         WindowGroup("SingleSense", id: "main") {
@@ -27,10 +28,44 @@ struct SingleSenseApp: App {
             }
         }
         
-        MenuBarExtra("SingleSense", systemImage: "gamecontroller.fill") {
+        MenuBarExtra {
             MenuBarView()
+        } label: {
+            menuBarLabel
         }
         .menuBarExtraStyle(.menu)
+    }
+
+    @ViewBuilder
+    private var menuBarLabel: some View {
+        if controllerState.isConnected {
+            let percentage = Int(controllerState.batteryLevel * 100)
+            HStack(spacing: 3) {
+                Image(systemName: "gamecontroller.fill")
+                Text("\(percentage)%")
+                Image(systemName: batterySymbolName)
+            }
+        } else {
+            Image(systemName: "gamecontroller")
+        }
+    }
+
+    private var batterySymbolName: String {
+        let level = controllerState.batteryLevel
+        if controllerState.isBatteryCharging {
+            return "battery.100percent.bolt"
+        }
+        if level > 0.85 {
+            return "battery.100percent"
+        } else if level > 0.60 {
+            return "battery.75percent"
+        } else if level > 0.35 {
+            return "battery.50percent"
+        } else if level > 0.10 {
+            return "battery.25percent"
+        } else {
+            return "battery.0percent"
+        }
     }
 }
 

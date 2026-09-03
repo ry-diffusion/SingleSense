@@ -79,7 +79,7 @@ There's also a **motion** tab, with the gyroscope in degrees per second and the 
 
 Save whole combinations — lighting, triggers, rumble — and switch between them in one click. Six come built in: PlayStation Classic, FPS, Racing, Rainbow, Battery Saver and Night City.
 
-Everything is reachable from the menu bar icon too, without opening the window.
+Everything is reachable from the menu bar item too, which displays the live battery percentage and charging status at a glance without opening the window.
 
 ---
 
