@@ -36,6 +36,37 @@
         "enabled" : true,
         "value" : 0.3
       }
+    },
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "extended-srgb:0.00000,0.30000,0.66000,1.00000",
+                  "extended-srgb:0.00000,0.12000,0.32000,1.00000"
+                ]
+              }
+            }
+          ],
+          "glass" : false,
+          "hidden-specializations" : [
+            {
+              "appearance" : "light",
+              "value" : true
+            },
+            {
+              "appearance" : "tinted",
+              "value" : true
+            }
+          ],
+          "image-name" : "Background.svg",
+          "name" : "Dark Background"
+        }
+      ]
     }
   ],
   "supported-platforms" : {
