@@ -155,7 +155,7 @@ public final class PermissionMonitor: ObservableObject {
     /// record this computer's screen" alert on screen — once per call.
     ///
     /// Only a positive answer means anything. A screen with nothing but
-    /// SingleSense on it looks exactly like a denial, so this can promote the
+    /// Single Sense on it looks exactly like a denial, so this can promote the
     /// permission to granted but must never take it away.
     private static func canReadOtherWindowTitles() -> Bool {
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]

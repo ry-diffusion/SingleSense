@@ -46,7 +46,7 @@ public final class ProfileStorage: ObservableObject {
             let data = try JSONEncoder().encode(profiles)
             try data.write(to: profilesFileURL)
         } catch {
-            print("[SingleSense] Failed to save profiles: \(error)")
+            print("[Single Sense] Failed to save profiles: \(error)")
         }
     }
     

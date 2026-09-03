@@ -89,7 +89,7 @@ public struct MainView: View {
                     ProfilesView()
                 }
             }
-            .navigationTitle(selectedItem?.rawValue ?? "SingleSense")
+            .navigationTitle(selectedItem?.rawValue ?? "Single Sense")
             .background(musicSyncBackground)
         }
         .frame(minWidth: 850, minHeight: 620)

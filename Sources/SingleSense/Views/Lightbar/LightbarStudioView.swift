@@ -523,7 +523,7 @@ public struct LightbarStudioView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.orange)
 
-            Text("SingleSense reads the system audio output in memory to synchronize controller lighting and haptics. No video or screen is accessed, and audio is never recorded or transmitted.")
+            Text("Single Sense reads the system audio output in memory to synchronize controller lighting and haptics. No video or screen is accessed, and audio is never recorded or transmitted.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -540,7 +540,7 @@ public struct LightbarStudioView: View {
             }
             .controlSize(.small)
 
-            Text("In System Settings, go to Privacy & Security → System Audio Recording Only and turn on SingleSense.")
+            Text("In System Settings, go to Privacy & Security → System Audio Recording Only and turn on Single Sense.")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -558,13 +558,13 @@ public struct LightbarStudioView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.orange)
 
-            Text("Screen Recording has been allowed, but macOS requires reopening SingleSense before audio capture can start.")
+            Text("Screen Recording has been allowed, but macOS requires reopening Single Sense before audio capture can start.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack {
-                Button("Relaunch SingleSense") {
+                Button("Relaunch Single Sense") {
                     audioEngine.relaunchApp()
                 }
                 .buttonStyle(.borderedProminent)

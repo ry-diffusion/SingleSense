@@ -240,7 +240,7 @@ public final class DualSenseManager: ObservableObject {
             }
         }
         
-        print("[SingleSense] Controller attached: \(vendor)")
+        print("[Single Sense] Controller attached: \(vendor)")
     }
     
     private func detachController() {
@@ -249,7 +249,7 @@ public final class DualSenseManager: ObservableObject {
         hapticEngine = nil
         controllerState.isConnected = false
         controllerState.resetInputs()
-        print("[SingleSense] Controller detached")
+        print("[Single Sense] Controller detached")
     }
     
     // MARK: - Input Handlers Binding
@@ -801,7 +801,7 @@ public final class DualSenseManager: ObservableObject {
             let player = try engine.makePlayer(with: pattern)
             try player.start(atTime: 0)
         } catch {
-            print("[SingleSense] CoreHaptics playback error: \(error)")
+            print("[Single Sense] CoreHaptics playback error: \(error)")
         }
     }
     

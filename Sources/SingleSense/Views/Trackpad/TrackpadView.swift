@@ -51,7 +51,7 @@ public struct TrackpadView: View {
 
     private var permissionCallout: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("SingleSense needs Accessibility permission to move the cursor and click.",
+            Label("Single Sense needs Accessibility permission to move the cursor and click.",
                   systemImage: "lock.shield")
                 .font(.callout.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)

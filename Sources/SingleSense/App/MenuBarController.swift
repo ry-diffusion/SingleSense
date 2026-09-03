@@ -21,7 +21,7 @@ public struct MenuBarView: View {
             }) {
                 HStack {
                     Image(systemName: "macwindow.badge.plus")
-                    Text("Open SingleSense Window")
+                    Text("Open Single Sense Window")
                         .fontWeight(.bold)
                 }
             }
@@ -93,7 +93,7 @@ public struct MenuBarView: View {
             
             Divider()
             
-            Button("Quit SingleSense") {
+            Button("Quit Single Sense") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q", modifiers: .command)

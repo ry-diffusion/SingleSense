@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>SingleSense</string>
+	<string>Single Sense</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -44,13 +44,13 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>NSAudioCaptureUsageDescription</key>
-	<string>SingleSense reads the system audio output in memory to synchronize controller lighting and haptics with your media. Audio is analyzed in real time and never saved or transmitted.</string>
+	<string>Single Sense reads the system audio output in memory to synchronize controller lighting and haptics with your media. Audio is analyzed in real time and never saved or transmitted.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>SingleSense requires Bluetooth access to communicate with and configure PS5 DualSense controllers.</string>
+	<string>Single Sense requires Bluetooth access to communicate with and configure PS5 DualSense controllers.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>SingleSense requires Bluetooth access to communicate with and configure PS5 DualSense controllers.</string>
+	<string>Single Sense requires Bluetooth access to communicate with and configure PS5 DualSense controllers.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 SingleSense. All rights reserved.</string>
+	<string>Copyright © 2026 Single Sense. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

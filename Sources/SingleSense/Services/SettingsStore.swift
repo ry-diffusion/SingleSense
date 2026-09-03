@@ -89,7 +89,7 @@ public final class SettingsStore {
     public func load() -> SessionSettings {
         guard let data = try? Data(contentsOf: fileURL) else { return SessionSettings() }
         guard let settings = try? JSONDecoder().decode(SessionSettings.self, from: data) else {
-            print("[SingleSense] session.json could not be read; starting from defaults")
+            print("[Single Sense] session.json could not be read; starting from defaults")
             return SessionSettings()
         }
         return settings
@@ -118,7 +118,7 @@ public final class SettingsStore {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(settings).write(to: fileURL, options: .atomic)
         } catch {
-            print("[SingleSense] Failed to save session settings: \(error)")
+            print("[Single Sense] Failed to save session settings: \(error)")
         }
     }
 }

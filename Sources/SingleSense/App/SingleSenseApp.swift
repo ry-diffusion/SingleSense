@@ -7,7 +7,7 @@ struct SingleSenseApp: App {
     @ObservedObject var controllerState = DualSenseManager.shared.controllerState
     
     var body: some Scene {
-        WindowGroup("SingleSense", id: "main") {
+        WindowGroup("Single Sense", id: "main") {
             MainView()
         }
         .defaultSize(width: 960, height: 680)
@@ -16,10 +16,10 @@ struct SingleSenseApp: App {
         .commands {
             SidebarCommands()
             CommandGroup(replacing: .appInfo) {
-                Button("About SingleSense") {
+                Button("About Single Sense") {
                     NSApplication.shared.orderFrontStandardAboutPanel(
                         options: [
-                            NSApplication.AboutPanelOptionKey.applicationName: "SingleSense",
+                            NSApplication.AboutPanelOptionKey.applicationName: "Single Sense",
                             NSApplication.AboutPanelOptionKey.applicationVersion: "1.0.0",
                             NSApplication.AboutPanelOptionKey.version: "1.0.0"
                         ]

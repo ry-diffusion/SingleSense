@@ -6,7 +6,7 @@ import XCTest
 /// (`drivers/hid/hid-playstation.c`) and dualsensectl (nowrep/dualsensectl,
 /// `main.c`), which is the one that actually implements adaptive triggers.
 ///
-/// Nothing in `Reference` is derived from SingleSense — that is the point.
+/// Nothing in `Reference` is derived from Single Sense — that is the point.
 /// If someone changes an offset or a flag, these fail.
 private enum Reference {
     static let flag0CompatibleVibration: UInt8 = 1 << 0

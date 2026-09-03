@@ -174,7 +174,7 @@ public final class HIDDriver {
             IOHIDManagerScheduleWithRunLoop(manager, runLoop, CFRunLoopMode.commonModes.rawValue)
             let openStatus = IOHIDManagerOpen(manager, IOOptionBits(kIOHIDOptionsTypeNone))
             if openStatus != kIOReturnSuccess {
-                print("[SingleSense HID] IOHIDManagerOpen failed: \(self.hexStatus(openStatus))")
+                print("[Single Sense HID] IOHIDManagerOpen failed: \(self.hexStatus(openStatus))")
             }
 
             // A run loop with no sources returns immediately; the manager
@@ -248,7 +248,7 @@ public final class HIDDriver {
         guard openResult == kIOReturnSuccess else {
             // Without an open handle every SetReport would fail silently, so
             // there is nothing to gain by keeping the device around.
-            print("[SingleSense HID] IOHIDDeviceOpen failed: \(hexStatus(openResult)) — device ignored")
+            print("[Single Sense HID] IOHIDDeviceOpen failed: \(hexStatus(openResult)) — device ignored")
             return
         }
 
@@ -306,7 +306,7 @@ public final class HIDDriver {
         )
 
         print("""
-            [SingleSense HID] Attached \(isEdge ? "DualSense Edge" : "DualSense") over \
+            [Single Sense HID] Attached \(isEdge ? "DualSense Edge" : "DualSense") over \
             \(isBluetooth ? "Bluetooth" : "USB") — output report \(layout.totalSize) bytes
             """)
 
@@ -338,7 +338,7 @@ public final class HIDDriver {
             }
             self.lock.unlock()
 
-            print("[SingleSense HID] Update version \(version >> 8).\(version & 0xFF), rumble path \(useV2 ? "v2" : "v1")")
+            print("[Single Sense HID] Update version \(version >> 8).\(version & 0xFF), rumble path \(useV2 ? "v2" : "v1")")
         }
 
         DispatchQueue.main.async { [weak self] in
@@ -360,7 +360,7 @@ public final class HIDDriver {
 
         HIDDriver.detach(device: device, buffer: buffer)
 
-        print("[SingleSense HID] Controller removed")
+        print("[Single Sense HID] Controller removed")
         DispatchQueue.main.async { [weak self] in
             self?.onDeviceDisconnected?()
         }
@@ -422,7 +422,7 @@ public final class HIDDriver {
             device: device,
             isBluetooth: isBluetooth
         ), let calibration = DSIMUCalibration.parse(featureReport: buffer) else {
-            print("[SingleSense HID] IMU calibration unavailable — using raw scaling")
+            print("[Single Sense HID] IMU calibration unavailable — using raw scaling")
             return .identity
         }
         return calibration
@@ -594,7 +594,7 @@ public final class HIDDriver {
         )
 
         guard status == kIOReturnSuccess else {
-            print("[SingleSense HID] SetReport failed: \(hexStatus(status))")
+            print("[Single Sense HID] SetReport failed: \(hexStatus(status))")
             recordSendOutcome(delivered: false)
             return false
         }

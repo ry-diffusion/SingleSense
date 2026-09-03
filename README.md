@@ -1,6 +1,8 @@
 <div align="center">
 
-# SingleSense 🎮
+<img src="Docs/logo.png" alt="Single Sense" width="168">
+
+# Single Sense 🎮
 
 **Make your DualSense yours — straight from your Mac.**
 
@@ -37,7 +39,7 @@ The **five player LEDs** join in as a meter — filling from the left, growing o
 
 And if you want to *feel* the music, switch on **rumble**: bass goes to the heavy motor on the left, treble to the light one on the right. It ships off, because continuous rumble drains the battery noticeably faster.
 
-> The first time, macOS will ask for **System Audio Recording** permission. SingleSense uses Apple's native Core Audio Process Taps to listen to the system mix directly — no screen or video recording permission is needed.
+> The first time, macOS will ask for **System Audio Recording** permission. Single Sense uses Apple's native Core Audio Process Taps to listen to the system mix directly — no screen or video recording permission is needed.
 
 ### 🎯 Adaptive triggers
 
@@ -90,13 +92,13 @@ You'll need a Mac running **macOS 14.2 (Sonoma)** or later, with Xcode installed
 ```bash
 git clone https://github.com/ry-diffusion/SingleSense.git
 cd SingleSense
-open SingleSense.xcodeproj
+open "Single Sense.xcodeproj"
 ```
 
 Then hit **Run** (⌘R). Prefer the terminal?
 
 ```bash
-xcodebuild -project SingleSense.xcodeproj -scheme SingleSense -configuration Release build
+xcodebuild -project "Single Sense.xcodeproj" -scheme "Single Sense" -configuration Release build
 ```
 
 Connect the DualSense over **USB** or **Bluetooth** — both work, and the app figures out which one on its own. It supports the standard DualSense and the **DualSense Edge**, including the back paddles.
@@ -119,8 +121,8 @@ One caveat: the app is signed locally (ad-hoc), so macOS may ask again after eac
 It's a plain Xcode project — one app target and one unit-test target, no dependencies:
 
 ```bash
-xcodebuild -project SingleSense.xcodeproj -scheme SingleSense build   # build
-xcodebuild -project SingleSense.xcodeproj -scheme SingleSense test    # run the test suite
+xcodebuild -project "Single Sense.xcodeproj" -scheme "Single Sense" build   # build
+xcodebuild -project "Single Sense.xcodeproj" -scheme "Single Sense" test    # run the test suite
 ```
 
 Signing is set to **Sign to Run Locally** (ad-hoc), so it builds on a clean machine with no developer account. Set your team in *Signing & Capabilities* if you want a stable signature.
