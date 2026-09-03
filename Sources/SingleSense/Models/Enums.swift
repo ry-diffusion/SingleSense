@@ -269,3 +269,26 @@ public enum RumbleCurve {
         return floor + normalised * (1 - floor)
     }
 }
+
+/// How well output reports are actually reaching the controller.
+///
+/// A Bluetooth link under load refuses writes, and the only previous signal
+/// was a console line. This is what the dashboard shows instead.
+public enum LinkHealth: String, Codable, CaseIterable {
+    /// Reports are being accepted.
+    case healthy = "Healthy"
+    /// Some writes are being refused — usually a congested Bluetooth link.
+    case congested = "Congested"
+    /// Retries are exhausted; the controller is not taking reports at all.
+    case unresponsive = "Not responding"
+
+    public var iconName: String {
+        switch self {
+        case .healthy: return "checkmark.circle.fill"
+        case .congested: return "exclamationmark.triangle.fill"
+        case .unresponsive: return "xmark.octagon.fill"
+        }
+    }
+
+    public var isProblem: Bool { self != .healthy }
+}

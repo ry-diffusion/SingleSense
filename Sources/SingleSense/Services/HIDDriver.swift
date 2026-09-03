@@ -76,6 +76,8 @@ public final class HIDDriver {
     private var context: DeviceContext?
     private var outputSequence: UInt8 = 0
     private var deduplicator = DSSendDeduplicator()
+    private var consecutiveFailures = 0
+    private var linkHealth: LinkHealth = .healthy
 
     /// Ordering and backpressure for everything this driver sends.
     private var outputQueue = DSOutputQueue()
@@ -105,7 +107,9 @@ public final class HIDDriver {
     /// Fired on the I/O thread for every input report, unthrottled, so cursor
     /// motion tracks at the controller's full report rate instead of the UI's.
     public var onTouchpadSample: ((DSInputSnapshot) -> Void)?
-    public var onSendError: ((IOReturn) -> Void)?
+    /// Reports how well writes are landing, so the UI can say so instead of
+    /// the failure only reaching the console.
+    public var onLinkHealthChanged: ((LinkHealth) -> Void)?
 
     private let sendQueue = DispatchQueue(label: "com.singlesense.hid.send", qos: .userInteractive)
 
@@ -275,6 +279,8 @@ public final class HIDDriver {
             calibration: .identity
         )
         outputSequence = 0
+        consecutiveFailures = 0
+        linkHealth = .healthy
         deduplicator.invalidate()
         inputBuffer = buffer
         lastSnapshot = DSInputSnapshot()
@@ -589,12 +595,36 @@ public final class HIDDriver {
 
         guard status == kIOReturnSuccess else {
             print("[SingleSense HID] SetReport failed: \(hexStatus(status))")
-            DispatchQueue.main.async { [weak self] in
-                self?.onSendError?(status)
-            }
+            recordSendOutcome(delivered: false)
             return false
         }
+        recordSendOutcome(delivered: true)
         return true
+    }
+
+    /// Collapses a run of write results into a health level. One refusal is
+    /// ordinary congestion; exhausting the retries means nothing is landing.
+    private func recordSendOutcome(delivered: Bool) {
+        lock.lock()
+        if delivered {
+            consecutiveFailures = 0
+        } else {
+            consecutiveFailures += 1
+        }
+        let health: LinkHealth
+        switch consecutiveFailures {
+        case 0: health = .healthy
+        case ..<Self.maxSendAttempts: health = .congested
+        default: health = .unresponsive
+        }
+        let changed = health != linkHealth
+        if changed { linkHealth = health }
+        lock.unlock()
+
+        guard changed else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.onLinkHealthChanged?(health)
+        }
     }
 
     /// Builds and sends a full output report.

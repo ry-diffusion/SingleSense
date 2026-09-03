@@ -20,10 +20,10 @@ public struct MotionSensorView: View {
                     VStack(spacing: 12) {
                         HStack {
                             Label("3D Attitude & Horizon", systemImage: "gyroscope")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.headline)
                             Spacer()
                             Text("Tilt the physical controller to see live motion")
-                                .font(.system(size: 11))
+                                .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
                         
@@ -64,7 +64,7 @@ public struct MotionSensorView: View {
                     // Gyroscope Card
                     VStack(alignment: .leading, spacing: 12) {
                         Label("Gyroscope (Angular Velocity)", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.headline.weight(.bold))
                         
                         sensorRow(label: "Pitch (X)", value: state.gyroPitch, unit: "\u{00B0}/s", color: .red)
                         sensorRow(label: "Roll (Y)", value: state.gyroRoll, unit: "\u{00B0}/s", color: .green)
@@ -78,7 +78,7 @@ public struct MotionSensorView: View {
                     // Accelerometer Card
                     VStack(alignment: .leading, spacing: 12) {
                         Label("Accelerometer (G-Force)", systemImage: "move.3d")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.headline.weight(.bold))
                         
                         sensorRow(label: "Accel X", value: state.accelX, unit: "G", color: .orange)
                         sensorRow(label: "Accel Y", value: state.accelY, unit: "G", color: .purple)
@@ -94,14 +94,15 @@ public struct MotionSensorView: View {
         }
     }
     
+    /// Reads as one item: "Pitch (X), -12.4 degrees per second".
     private func sensorRow(label: String, value: Float, unit: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(label)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.callout.weight(.medium))
                 Spacer()
                 Text(String(format: "%+.2f %@", value, unit))
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .font(.subheadline.monospaced().weight(.bold))
                     .foregroundColor(color)
             }
             
@@ -123,5 +124,9 @@ public struct MotionSensorView: View {
             }
             .frame(height: 6)
         }
+        // The bar is a redundant rendering of the number beside it.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
+        .accessibilityValue(String(format: "%+.2f %@", value, unit))
     }
 }

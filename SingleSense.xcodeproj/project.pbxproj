@@ -1,0 +1,743 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5E0000000000000000000002 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000001 /* MenuBarController.swift */; };
+		5E0000000000000000000004 /* SingleSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000003 /* SingleSenseApp.swift */; };
+		5E0000000000000000000007 /* ControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000006 /* ControllerState.swift */; };
+		5E0000000000000000000009 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000008 /* Enums.swift */; };
+		5E000000000000000000000B /* LightbarConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000000A /* LightbarConfiguration.swift */; };
+		5E000000000000000000000D /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000000C /* Profile.swift */; };
+		5E000000000000000000000F /* TriggerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000000E /* TriggerConfiguration.swift */; };
+		5E0000000000000000000012 /* AnalysisFrameQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000011 /* AnalysisFrameQueue.swift */; };
+		5E0000000000000000000014 /* AudioReactiveEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000013 /* AudioReactiveEngine.swift */; };
+		5E0000000000000000000016 /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000015 /* Checksum.swift */; };
+		5E0000000000000000000018 /* DualSenseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000017 /* DualSenseManager.swift */; };
+		5E000000000000000000001A /* DualSenseProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000019 /* DualSenseProtocol.swift */; };
+		5E000000000000000000001C /* HIDDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000001B /* HIDDriver.swift */; };
+		5E000000000000000000001E /* OutputQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000001D /* OutputQueue.swift */; };
+		5E0000000000000000000020 /* PermissionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000001F /* PermissionMonitor.swift */; };
+		5E0000000000000000000022 /* ProfileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000021 /* ProfileStorage.swift */; };
+		5E0000000000000000000024 /* PublishScheduling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000023 /* PublishScheduling.swift */; };
+		5E0000000000000000000026 /* RainbowEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000025 /* RainbowEngine.swift */; };
+		5E0000000000000000000028 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000027 /* SettingsStore.swift */; };
+		5E000000000000000000002A /* TrackpadGestures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000029 /* TrackpadGestures.swift */; };
+		5E000000000000000000002C /* TrackpadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000002B /* TrackpadService.swift */; };
+		5E000000000000000000002F /* StatusCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000002E /* StatusCardView.swift */; };
+		5E0000000000000000000031 /* TriggerDynoTestCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000030 /* TriggerDynoTestCardView.swift */; };
+		5E0000000000000000000034 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000033 /* DashboardView.swift */; };
+		5E0000000000000000000036 /* GamepadVisualizerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000035 /* GamepadVisualizerView.swift */; };
+		5E0000000000000000000039 /* HapticsLabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000038 /* HapticsLabView.swift */; };
+		5E000000000000000000003C /* ColorPickerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000003B /* ColorPickerComponents.swift */; };
+		5E000000000000000000003E /* LightbarStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000003D /* LightbarStudioView.swift */; };
+		5E0000000000000000000041 /* MotionSensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000040 /* MotionSensorView.swift */; };
+		5E0000000000000000000044 /* ProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000043 /* ProfilesView.swift */; };
+		5E0000000000000000000047 /* TrackpadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000046 /* TrackpadView.swift */; };
+		5E000000000000000000004A /* TriggerPresetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000049 /* TriggerPresetsView.swift */; };
+		5E000000000000000000004C /* TriggerStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000004B /* TriggerStudioView.swift */; };
+		5E000000000000000000004E /* TriggerZoneGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000004D /* TriggerZoneGraphView.swift */; };
+		5E0000000000000000000051 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000050 /* MainView.swift */; };
+		5E0000000000000000000055 /* DualSenseCtlConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000054 /* DualSenseCtlConformanceTests.swift */; };
+		5E0000000000000000000057 /* FeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000056 /* FeatureTests.swift */; };
+		5E0000000000000000000059 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000058 /* Helpers.swift */; };
+		5E000000000000000000005B /* IMUAndTrackpadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000005A /* IMUAndTrackpadTests.swift */; };
+		5E000000000000000000005D /* OutputReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000005C /* OutputReportTests.swift */; };
+		5E000000000000000000005F /* QueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E000000000000000000005E /* QueueTests.swift */; };
+		5E0000000000000000000061 /* SendDeduplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000060 /* SendDeduplicationTests.swift */; };
+		5E0000000000000000000063 /* SessionSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000062 /* SessionSettingsTests.swift */; };
+		5E0000000000000000000065 /* ValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000064 /* ValidationTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5E000000000000000000007F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5E000000000000000000007D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5E000000000000000000007E;
+			remoteInfo = SingleSense;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5E0000000000000000000001 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		5E0000000000000000000003 /* SingleSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleSenseApp.swift; sourceTree = "<group>"; };
+		5E0000000000000000000006 /* ControllerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerState.swift; sourceTree = "<group>"; };
+		5E0000000000000000000008 /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
+		5E000000000000000000000A /* LightbarConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightbarConfiguration.swift; sourceTree = "<group>"; };
+		5E000000000000000000000C /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		5E000000000000000000000E /* TriggerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerConfiguration.swift; sourceTree = "<group>"; };
+		5E0000000000000000000011 /* AnalysisFrameQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisFrameQueue.swift; sourceTree = "<group>"; };
+		5E0000000000000000000013 /* AudioReactiveEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioReactiveEngine.swift; sourceTree = "<group>"; };
+		5E0000000000000000000015 /* Checksum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksum.swift; sourceTree = "<group>"; };
+		5E0000000000000000000017 /* DualSenseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DualSenseManager.swift; sourceTree = "<group>"; };
+		5E0000000000000000000019 /* DualSenseProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DualSenseProtocol.swift; sourceTree = "<group>"; };
+		5E000000000000000000001B /* HIDDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HIDDriver.swift; sourceTree = "<group>"; };
+		5E000000000000000000001D /* OutputQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputQueue.swift; sourceTree = "<group>"; };
+		5E000000000000000000001F /* PermissionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionMonitor.swift; sourceTree = "<group>"; };
+		5E0000000000000000000021 /* ProfileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStorage.swift; sourceTree = "<group>"; };
+		5E0000000000000000000023 /* PublishScheduling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishScheduling.swift; sourceTree = "<group>"; };
+		5E0000000000000000000025 /* RainbowEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainbowEngine.swift; sourceTree = "<group>"; };
+		5E0000000000000000000027 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		5E0000000000000000000029 /* TrackpadGestures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadGestures.swift; sourceTree = "<group>"; };
+		5E000000000000000000002B /* TrackpadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadService.swift; sourceTree = "<group>"; };
+		5E000000000000000000002E /* StatusCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCardView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000030 /* TriggerDynoTestCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerDynoTestCardView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000033 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000035 /* GamepadVisualizerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamepadVisualizerView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000038 /* HapticsLabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsLabView.swift; sourceTree = "<group>"; };
+		5E000000000000000000003B /* ColorPickerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerComponents.swift; sourceTree = "<group>"; };
+		5E000000000000000000003D /* LightbarStudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightbarStudioView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000040 /* MotionSensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSensorView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000043 /* ProfilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilesView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000046 /* TrackpadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000049 /* TriggerPresetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerPresetsView.swift; sourceTree = "<group>"; };
+		5E000000000000000000004B /* TriggerStudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerStudioView.swift; sourceTree = "<group>"; };
+		5E000000000000000000004D /* TriggerZoneGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerZoneGraphView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000050 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		5E0000000000000000000054 /* DualSenseCtlConformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DualSenseCtlConformanceTests.swift; sourceTree = "<group>"; };
+		5E0000000000000000000056 /* FeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTests.swift; sourceTree = "<group>"; };
+		5E0000000000000000000058 /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
+		5E000000000000000000005A /* IMUAndTrackpadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IMUAndTrackpadTests.swift; sourceTree = "<group>"; };
+		5E000000000000000000005C /* OutputReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputReportTests.swift; sourceTree = "<group>"; };
+		5E000000000000000000005E /* QueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueTests.swift; sourceTree = "<group>"; };
+		5E0000000000000000000060 /* SendDeduplicationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDeduplicationTests.swift; sourceTree = "<group>"; };
+		5E0000000000000000000062 /* SessionSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSettingsTests.swift; sourceTree = "<group>"; };
+		5E0000000000000000000064 /* ValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationTests.swift; sourceTree = "<group>"; };
+		5E0000000000000000000067 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5E0000000000000000000069 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		5E000000000000000000006A /* SingleSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SingleSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E000000000000000000006B /* SingleSenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SingleSenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5E000000000000000000006F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E0000000000000000000072 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5E0000000000000000000005 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000001 /* MenuBarController.swift */,
+				5E0000000000000000000003 /* SingleSenseApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000010 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000006 /* ControllerState.swift */,
+				5E0000000000000000000008 /* Enums.swift */,
+				5E000000000000000000000A /* LightbarConfiguration.swift */,
+				5E000000000000000000000C /* Profile.swift */,
+				5E000000000000000000000E /* TriggerConfiguration.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		5E000000000000000000002D /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000011 /* AnalysisFrameQueue.swift */,
+				5E0000000000000000000013 /* AudioReactiveEngine.swift */,
+				5E0000000000000000000015 /* Checksum.swift */,
+				5E0000000000000000000017 /* DualSenseManager.swift */,
+				5E0000000000000000000019 /* DualSenseProtocol.swift */,
+				5E000000000000000000001B /* HIDDriver.swift */,
+				5E000000000000000000001D /* OutputQueue.swift */,
+				5E000000000000000000001F /* PermissionMonitor.swift */,
+				5E0000000000000000000021 /* ProfileStorage.swift */,
+				5E0000000000000000000023 /* PublishScheduling.swift */,
+				5E0000000000000000000025 /* RainbowEngine.swift */,
+				5E0000000000000000000027 /* SettingsStore.swift */,
+				5E0000000000000000000029 /* TrackpadGestures.swift */,
+				5E000000000000000000002B /* TrackpadService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000032 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				5E000000000000000000002E /* StatusCardView.swift */,
+				5E0000000000000000000030 /* TriggerDynoTestCardView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000037 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000033 /* DashboardView.swift */,
+				5E0000000000000000000035 /* GamepadVisualizerView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		5E000000000000000000003A /* Haptics */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000038 /* HapticsLabView.swift */,
+			);
+			path = Haptics;
+			sourceTree = "<group>";
+		};
+		5E000000000000000000003F /* Lightbar */ = {
+			isa = PBXGroup;
+			children = (
+				5E000000000000000000003B /* ColorPickerComponents.swift */,
+				5E000000000000000000003D /* LightbarStudioView.swift */,
+			);
+			path = Lightbar;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000042 /* Motion */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000040 /* MotionSensorView.swift */,
+			);
+			path = Motion;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000045 /* Profiles */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000043 /* ProfilesView.swift */,
+			);
+			path = Profiles;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000048 /* Trackpad */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000046 /* TrackpadView.swift */,
+			);
+			path = Trackpad;
+			sourceTree = "<group>";
+		};
+		5E000000000000000000004F /* Triggers */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000049 /* TriggerPresetsView.swift */,
+				5E000000000000000000004B /* TriggerStudioView.swift */,
+				5E000000000000000000004D /* TriggerZoneGraphView.swift */,
+			);
+			path = Triggers;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000052 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000032 /* Components */,
+				5E0000000000000000000037 /* Dashboard */,
+				5E000000000000000000003A /* Haptics */,
+				5E000000000000000000003F /* Lightbar */,
+				5E0000000000000000000042 /* Motion */,
+				5E0000000000000000000045 /* Profiles */,
+				5E0000000000000000000048 /* Trackpad */,
+				5E000000000000000000004F /* Triggers */,
+				5E0000000000000000000050 /* MainView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000053 /* SingleSense */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000005 /* App */,
+				5E0000000000000000000010 /* Models */,
+				5E000000000000000000002D /* Services */,
+				5E0000000000000000000052 /* Views */,
+			);
+			name = SingleSense;
+			path = Sources/SingleSense;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000066 /* SingleSenseTests */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000054 /* DualSenseCtlConformanceTests.swift */,
+				5E0000000000000000000056 /* FeatureTests.swift */,
+				5E0000000000000000000058 /* Helpers.swift */,
+				5E000000000000000000005A /* IMUAndTrackpadTests.swift */,
+				5E000000000000000000005C /* OutputReportTests.swift */,
+				5E000000000000000000005E /* QueueTests.swift */,
+				5E0000000000000000000060 /* SendDeduplicationTests.swift */,
+				5E0000000000000000000062 /* SessionSettingsTests.swift */,
+				5E0000000000000000000064 /* ValidationTests.swift */,
+			);
+			name = SingleSenseTests;
+			path = Tests/SingleSenseTests;
+			sourceTree = "<group>";
+		};
+		5E0000000000000000000068 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000067 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		5E000000000000000000006C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5E000000000000000000006A /* SingleSense.app */,
+				5E000000000000000000006B /* SingleSenseTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5E000000000000000000006D = {
+			isa = PBXGroup;
+			children = (
+				5E0000000000000000000053 /* SingleSense */,
+				5E0000000000000000000066 /* SingleSenseTests */,
+				5E0000000000000000000068 /* Resources */,
+				5E0000000000000000000069 /* README.md */,
+				5E000000000000000000006C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5E000000000000000000007E /* SingleSense */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5E0000000000000000000079 /* Build configuration list for PBXNativeTarget "SingleSense" */;
+			buildPhases = (
+				5E000000000000000000006E /* Sources */,
+				5E000000000000000000006F /* Frameworks */,
+				5E0000000000000000000070 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SingleSense;
+			productName = SingleSense;
+			productReference = 5E000000000000000000006A /* SingleSense.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5E0000000000000000000081 /* SingleSenseTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5E000000000000000000007C /* Build configuration list for PBXNativeTarget "SingleSenseTests" */;
+			buildPhases = (
+				5E0000000000000000000071 /* Sources */,
+				5E0000000000000000000072 /* Frameworks */,
+				5E0000000000000000000073 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5E0000000000000000000080 /* PBXTargetDependency */,
+			);
+			name = SingleSenseTests;
+			productName = SingleSenseTests;
+			productReference = 5E000000000000000000006B /* SingleSenseTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5E000000000000000000007D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					5E000000000000000000007E = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					5E0000000000000000000081 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 5E000000000000000000007E;
+					};
+				};
+			};
+			buildConfigurationList = 5E0000000000000000000076 /* Build configuration list for PBXProject "SingleSense" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5E000000000000000000006D;
+			productRefGroup = 5E000000000000000000006C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5E000000000000000000007E /* SingleSense */,
+				5E0000000000000000000081 /* SingleSenseTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5E0000000000000000000070 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E0000000000000000000073 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5E000000000000000000006E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E0000000000000000000002 /* MenuBarController.swift in Sources */,
+				5E0000000000000000000004 /* SingleSenseApp.swift in Sources */,
+				5E0000000000000000000007 /* ControllerState.swift in Sources */,
+				5E0000000000000000000009 /* Enums.swift in Sources */,
+				5E000000000000000000000B /* LightbarConfiguration.swift in Sources */,
+				5E000000000000000000000D /* Profile.swift in Sources */,
+				5E000000000000000000000F /* TriggerConfiguration.swift in Sources */,
+				5E0000000000000000000012 /* AnalysisFrameQueue.swift in Sources */,
+				5E0000000000000000000014 /* AudioReactiveEngine.swift in Sources */,
+				5E0000000000000000000016 /* Checksum.swift in Sources */,
+				5E0000000000000000000018 /* DualSenseManager.swift in Sources */,
+				5E000000000000000000001A /* DualSenseProtocol.swift in Sources */,
+				5E000000000000000000001C /* HIDDriver.swift in Sources */,
+				5E000000000000000000001E /* OutputQueue.swift in Sources */,
+				5E0000000000000000000020 /* PermissionMonitor.swift in Sources */,
+				5E0000000000000000000022 /* ProfileStorage.swift in Sources */,
+				5E0000000000000000000024 /* PublishScheduling.swift in Sources */,
+				5E0000000000000000000026 /* RainbowEngine.swift in Sources */,
+				5E0000000000000000000028 /* SettingsStore.swift in Sources */,
+				5E000000000000000000002A /* TrackpadGestures.swift in Sources */,
+				5E000000000000000000002C /* TrackpadService.swift in Sources */,
+				5E000000000000000000002F /* StatusCardView.swift in Sources */,
+				5E0000000000000000000031 /* TriggerDynoTestCardView.swift in Sources */,
+				5E0000000000000000000034 /* DashboardView.swift in Sources */,
+				5E0000000000000000000036 /* GamepadVisualizerView.swift in Sources */,
+				5E0000000000000000000039 /* HapticsLabView.swift in Sources */,
+				5E000000000000000000003C /* ColorPickerComponents.swift in Sources */,
+				5E000000000000000000003E /* LightbarStudioView.swift in Sources */,
+				5E0000000000000000000041 /* MotionSensorView.swift in Sources */,
+				5E0000000000000000000044 /* ProfilesView.swift in Sources */,
+				5E0000000000000000000047 /* TrackpadView.swift in Sources */,
+				5E000000000000000000004A /* TriggerPresetsView.swift in Sources */,
+				5E000000000000000000004C /* TriggerStudioView.swift in Sources */,
+				5E000000000000000000004E /* TriggerZoneGraphView.swift in Sources */,
+				5E0000000000000000000051 /* MainView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E0000000000000000000071 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E0000000000000000000055 /* DualSenseCtlConformanceTests.swift in Sources */,
+				5E0000000000000000000057 /* FeatureTests.swift in Sources */,
+				5E0000000000000000000059 /* Helpers.swift in Sources */,
+				5E000000000000000000005B /* IMUAndTrackpadTests.swift in Sources */,
+				5E000000000000000000005D /* OutputReportTests.swift in Sources */,
+				5E000000000000000000005F /* QueueTests.swift in Sources */,
+				5E0000000000000000000061 /* SendDeduplicationTests.swift in Sources */,
+				5E0000000000000000000063 /* SessionSettingsTests.swift in Sources */,
+				5E0000000000000000000065 /* ValidationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5E0000000000000000000080 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5E000000000000000000007E /* SingleSense */;
+			targetProxy = 5E000000000000000000007F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5E0000000000000000000074 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		5E0000000000000000000075 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		5E0000000000000000000077 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 7B3G244WZG;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zesmoi.SIngleSense;
+				PRODUCT_MODULE_NAME = SingleSense;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		5E0000000000000000000078 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 7B3G244WZG;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zesmoi.SIngleSense;
+				PRODUCT_MODULE_NAME = SingleSense;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		5E000000000000000000007A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.singlesense.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleSense.app/Contents/MacOS/SingleSense";
+			};
+			name = Debug;
+		};
+		5E000000000000000000007B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.singlesense.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleSense.app/Contents/MacOS/SingleSense";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5E0000000000000000000076 /* Build configuration list for PBXProject "SingleSense" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E0000000000000000000074 /* Debug */,
+				5E0000000000000000000075 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5E0000000000000000000079 /* Build configuration list for PBXNativeTarget "SingleSense" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E0000000000000000000077 /* Debug */,
+				5E0000000000000000000078 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5E000000000000000000007C /* Build configuration list for PBXNativeTarget "SingleSenseTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E000000000000000000007A /* Debug */,
+				5E000000000000000000007B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5E000000000000000000007D /* Project object */;
+}

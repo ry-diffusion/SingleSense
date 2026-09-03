@@ -18,6 +18,20 @@ public final class DualSenseManager: ObservableObject {
     /// Trigger effects the dyno test wants right now. The HID path owns the
     /// device, so the buzz has to travel in the output report rather than
     /// through GCDualSenseAdaptiveTrigger.
+    /// True while the raw HID path owns the device.
+    ///
+    /// Everything prefers HID: it is the only path with the real trigger
+    /// encoder, the factory IMU calibration and the player LEDs. The
+    /// GameController framework stays as a degraded fallback for when
+    /// IOHIDDeviceOpen fails — another app holding the device, or a permission
+    /// problem — and must never run alongside HID, because two writers fighting
+    /// over the same report make the lightbar flicker and the triggers stutter.
+    private var usesHIDPath: Bool { HIDDriver.shared.isDeviceOpen }
+
+    /// The colour currently being driven, readable without waiting for the
+    /// published copy to land. Hardware must never read a stale value.
+    private var currentColor = RGBColor(red: 0.0, green: 0.4, blue: 1.0)
+
     private var dynoLeftTrigger = SingleTriggerConfig(mode: .off)
     private var dynoRightTrigger = SingleTriggerConfig(mode: .off)
 
@@ -28,10 +42,104 @@ public final class DualSenseManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let sendQueue = DispatchQueue(label: "com.singlesense.manager.send", qos: .userInteractive)
     
+    /// Suppresses saving while the stored state is being applied, so restoring
+    /// does not immediately write back what was just read.
+    private var isRestoring = false
+
     private init() {
+        restoreSession()
         setupGameControllerMonitoring()
         setupHIDDriver()
         setupRainbowEngine()
+        setupPersistence()
+    }
+
+    // MARK: - Persistence
+
+    private func restoreSession() {
+        isRestoring = true
+        defer { isRestoring = false }
+
+        let saved = SettingsStore.shared.load()
+        lightbarConfig = saved.lightbar
+        leftTriggerConfig = saved.leftTrigger.sanitized()
+        rightTriggerConfig = saved.rightTrigger.sanitized()
+        triggersLinked = saved.triggersLinked
+        leftRumbleIntensity = DSScale.clamp01(saved.leftRumble)
+        rightRumbleIntensity = DSScale.clamp01(saved.rightRumble)
+        currentColor = RainbowEngine.shared.calculateColor(for: lightbarConfig, elapsed: 0, controllerState: controllerState)
+
+        let trackpad = TrackpadService.shared
+        trackpad.sensitivity = saved.trackpadSensitivity
+        trackpad.scrollSensitivity = saved.trackpadScrollSensitivity
+        trackpad.naturalScrolling = saved.trackpadNaturalScrolling
+        trackpad.tapToClick = saved.trackpadTapToClick
+        // Only re-arm the trackpad if it can actually work; otherwise it would
+        // look enabled while silently doing nothing.
+        trackpad.isEnabled = saved.trackpadEnabled && PermissionMonitor.shared.hasAccessibility
+
+        if let id = saved.activeProfileId {
+            ProfileStorage.shared.activeProfileId = id
+        }
+    }
+
+    /// Persists whenever the working state settles.
+    private func setupPersistence() {
+        let manager = Publishers.MergeMany(
+            $lightbarConfig.map { _ in () }.eraseToAnyPublisher(),
+            $leftTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
+            $rightTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
+            $triggersLinked.map { _ in () }.eraseToAnyPublisher(),
+            $leftRumbleIntensity.map { _ in () }.eraseToAnyPublisher(),
+            $rightRumbleIntensity.map { _ in () }.eraseToAnyPublisher()
+        )
+
+        let trackpad = TrackpadService.shared
+        let trackpadChanges = Publishers.MergeMany(
+            trackpad.$isEnabled.map { _ in () }.eraseToAnyPublisher(),
+            trackpad.$sensitivity.map { _ in () }.eraseToAnyPublisher(),
+            trackpad.$scrollSensitivity.map { _ in () }.eraseToAnyPublisher(),
+            trackpad.$naturalScrolling.map { _ in () }.eraseToAnyPublisher(),
+            trackpad.$tapToClick.map { _ in () }.eraseToAnyPublisher()
+        )
+
+        Publishers.Merge3(
+            manager,
+            trackpadChanges,
+            ProfileStorage.shared.$activeProfileId.map { _ in () }.eraseToAnyPublisher()
+        )
+        .dropFirst()
+        .sink { [weak self] in self?.scheduleSave() }
+        .store(in: &cancellables)
+    }
+
+    private func scheduleSave() {
+        guard !isRestoring else { return }
+        SettingsStore.shared.save(currentSessionSettings())
+    }
+
+    private func currentSessionSettings() -> SessionSettings {
+        var settings = SessionSettings()
+        settings.lightbar = lightbarConfig
+        settings.leftTrigger = leftTriggerConfig
+        settings.rightTrigger = rightTriggerConfig
+        settings.triggersLinked = triggersLinked
+        settings.leftRumble = leftRumbleIntensity
+        settings.rightRumble = rightRumbleIntensity
+        settings.activeProfileId = ProfileStorage.shared.activeProfileId
+
+        let trackpad = TrackpadService.shared
+        settings.trackpadEnabled = trackpad.isEnabled
+        settings.trackpadSensitivity = trackpad.sensitivity
+        settings.trackpadScrollSensitivity = trackpad.scrollSensitivity
+        settings.trackpadNaturalScrolling = trackpad.naturalScrolling
+        settings.trackpadTapToClick = trackpad.tapToClick
+        return settings
+    }
+
+    /// Writes without waiting for the debounce, for app termination.
+    public func flushSettings() {
+        SettingsStore.shared.flush(currentSessionSettings())
     }
     
     public func start() {
@@ -39,9 +147,14 @@ public final class DualSenseManager: ObservableObject {
         RainbowEngine.shared.start()
         GCController.startWirelessControllerDiscovery()
         checkInitialControllers()
+        // Restored state only reached memory; this puts it on the hardware and
+        // starts the audio tap if the saved mode needs it.
+        applyLightbarConfiguration(force: true)
+        applyTriggerConfiguration(force: true)
     }
     
     public func stop() {
+        flushSettings()
         HIDDriver.shared.stop()
         RainbowEngine.shared.stop()
         AudioReactiveEngine.shared.setActive(false)
@@ -242,7 +355,7 @@ public final class DualSenseManager: ObservableObject {
                     // touch points; this axis-only approximation cannot tell a
                     // finger resting at dead centre from no finger at all, so it
                     // is a fallback rather than the primary source.
-                    guard let self = self, !HIDDriver.shared.isDeviceOpen else { return }
+                    guard let self = self, !self.usesHIDPath else { return }
                     self.controllerState.touch1Active = (x != 0 || y != 0)
                     self.controllerState.touch1X = (x + 1.0) / 2.0
                     self.controllerState.touch1Y = (1.0 - y) / 2.0
@@ -258,11 +371,11 @@ public final class DualSenseManager: ObservableObject {
         // userAcceleration need sensor fusion the DualSense does not expose on
         // macOS, and rotationRate is meaningless unless hasRotationRate is set
         // — which is how the gyro ended up mirroring the accelerometer.
-        if let motion = controller.motion, !HIDDriver.shared.isDeviceOpen {
+        if let motion = controller.motion, !usesHIDPath {
             motion.sensorsActive = true
             motion.valueChangedHandler = { [weak self] (motion: GCMotion) in
                 DispatchQueue.main.async {
-                    guard let self = self, !HIDDriver.shared.isDeviceOpen else { return }
+                    guard let self = self, !self.usesHIDPath else { return }
                     if motion.hasRotationRate {
                         // GCMotion reports radians per second.
                         let toDegrees = Float(180.0 / Double.pi)
@@ -280,7 +393,7 @@ public final class DualSenseManager: ObservableObject {
         // Battery: seed from GameController, then let the HID input report keep
         // it current. GCDeviceBattery is only sampled here, so on its own the
         // reading would never change after connect.
-        if let battery = controller.battery, !HIDDriver.shared.isDeviceOpen {
+        if let battery = controller.battery, !usesHIDPath {
             controllerState.batteryLevel = battery.batteryLevel
             controllerState.isBatteryCharging = (battery.batteryState == .charging || battery.batteryState == .full)
         }
@@ -328,11 +441,11 @@ public final class DualSenseManager: ObservableObject {
             )
         }
 
-        HIDDriver.shared.onSendError = { [weak self] _ in
-            // A failing SetReport means the hardware is no longer reachable;
-            // fall back to the GameController path rather than pretending the
-            // lightbar and triggers are still being driven.
-            self?.controllerState.connectionType = .unknown
+        HIDDriver.shared.onLinkHealthChanged = { [weak self] health in
+            // Surfacing this as the real transport going "Unknown" was a lie:
+            // the controller is still connected over the same link, it is just
+            // refusing writes.
+            self?.controllerState.linkHealth = health
         }
 
         HIDDriver.shared.onDeviceDisconnected = { [weak self] in
@@ -383,7 +496,10 @@ public final class DualSenseManager: ObservableObject {
         RainbowEngine.shared.onColorTick = { [weak self] color in
             guard let self = self else { return }
             if !self.isTriggerDynoTestActive {
-                self.controllerState.currentLightbarColor = color
+                self.currentColor = color
+                publishOnNextRunLoopTurn { [weak self] in
+                    self?.controllerState.currentLightbarColor = color
+                }
                 self.updateHardwareLightbar(color: color)
             }
         }
@@ -412,7 +528,10 @@ public final class DualSenseManager: ObservableObject {
         // 1. Color: Smooth Green (0.333) -> Yellow (0.166) -> Orange -> Red (0.0)
         let hue = 0.333 * Double(1.0 - maxTrigger)
         let dynamicColor = RGBColor.fromHSV(hue: hue, saturation: 1.0, value: 1.0)
-        controllerState.currentLightbarColor = dynamicColor
+        currentColor = dynamicColor
+        publishOnNextRunLoopTurn { [weak self] in
+            self?.controllerState.currentLightbarColor = dynamicColor
+        }
         
         // 2. Vibration Intensity & Speed (Left motor heavy weight + Right motor high frequency)
         let leftMotor: Float
@@ -435,7 +554,7 @@ public final class DualSenseManager: ObservableObject {
         updateHardwareLightbar(color: dynamicColor, leftMotorOverride: leftMotor, rightMotorOverride: rightMotor)
 
         // 5. GameController fallback, only when the HID path is unavailable.
-        if let dsGamepad = activeDualSenseGamepad, !HIDDriver.shared.isDeviceOpen {
+        if let dsGamepad = activeDualSenseGamepad, !usesHIDPath {
             if maxTrigger > 0.03 {
                 let freq = max(10.0, maxTrigger * 200.0)
                 if l2 > 0.03 {
@@ -480,13 +599,15 @@ public final class DualSenseManager: ObservableObject {
         let left = leftMotorOverride ?? music?.left ?? leftRumbleIntensity
         let right = rightMotorOverride ?? music?.right ?? rightRumbleIntensity
         
-        controllerState.leftRumbleIntensity = left
-        controllerState.rightRumbleIntensity = right
+        publishOnNextRunLoopTurn { [weak self] in
+            self?.controllerState.leftRumbleIntensity = left
+            self?.controllerState.rightRumbleIntensity = right
+        }
         
         // The raw HID report is authoritative when it is available. Driving
         // GCDeviceLight at the same time makes the two writers overwrite each
         // other and the lightbar flickers between the two colours.
-        if HIDDriver.shared.isDeviceOpen {
+        if usesHIDPath {
             HIDDriver.shared.sendHardwareState(
                 lightbar: color,
                 playerLEDMask: currentPlayerLEDMask(),
@@ -498,10 +619,14 @@ public final class DualSenseManager: ObservableObject {
                 rightTrigger: isTriggerDynoTestActive ? dynoRightTrigger : rightTriggerConfig,
                 forceSend: force
             )
-            controllerState.packetsSent += 1
+            publishOnNextRunLoopTurn { [weak self] in
+                self?.controllerState.packetsSent += 1
+            }
         } else if let light = activeGCController?.light {
             light.color = GCColor(red: Float(color.red), green: Float(color.green), blue: Float(color.blue))
-            controllerState.packetsSent += 1
+            publishOnNextRunLoopTurn { [weak self] in
+                self?.controllerState.packetsSent += 1
+            }
         }
     }
     
@@ -529,15 +654,18 @@ public final class DualSenseManager: ObservableObject {
     }
 
     public func applyLightbarConfiguration(force: Bool = false) {
-        // The audio tap is only worth its Screen Recording permission and CPU
-        // while the lightbar is actually driven by it.
+        // The audio tap is only worth its CPU while the lightbar is actually
+        // driven by it.
         let audio = AudioReactiveEngine.shared
         audio.sensitivity = Float(lightbarConfig.audioSensitivity)
         audio.smoothing = Float(lightbarConfig.audioSmoothing)
         audio.setActive(lightbarConfig.mode == .musicSync)
 
-        let color = RainbowEngine.shared.calculateColor(for: lightbarConfig, elapsed: 0)
-        controllerState.currentLightbarColor = color
+        let color = RainbowEngine.shared.calculateColor(for: lightbarConfig, elapsed: 0, controllerState: controllerState)
+        currentColor = color
+        publishOnNextRunLoopTurn { [weak self] in
+            self?.controllerState.currentLightbarColor = color
+        }
         updateHardwareLightbar(color: color, force: force)
     }
     
@@ -551,12 +679,12 @@ public final class DualSenseManager: ObservableObject {
         // GameController only gets to program the triggers when the HID path is
         // unavailable; otherwise the two encoders disagree (setModeSlopeFeedback
         // and the 10-zone curve have no equivalent in the simple effect modes).
-        if let dsGamepad = activeDualSenseGamepad, !HIDDriver.shared.isDeviceOpen {
+        if let dsGamepad = activeDualSenseGamepad, !usesHIDPath {
             applyAdaptiveTrigger(trigger: dsGamepad.leftTrigger, rawConfig: leftTriggerConfig)
             applyAdaptiveTrigger(trigger: dsGamepad.rightTrigger, rawConfig: rightTriggerConfig)
         }
 
-        updateHardwareLightbar(color: controllerState.currentLightbarColor, force: force)
+        updateHardwareLightbar(color: currentColor, force: force)
     }
     
     private func applyAdaptiveTrigger(trigger: GCDualSenseAdaptiveTrigger, rawConfig: SingleTriggerConfig) {
@@ -623,7 +751,7 @@ public final class DualSenseManager: ObservableObject {
         controllerState.leftRumbleIntensity = self.leftRumbleIntensity
         controllerState.rightRumbleIntensity = self.rightRumbleIntensity
         
-        updateHardwareLightbar(color: controllerState.currentLightbarColor)
+        updateHardwareLightbar(color: currentColor)
     }
     
     public func playHapticPattern(patternType: String) {

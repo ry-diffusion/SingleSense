@@ -77,6 +77,7 @@ public final class ControllerState: ObservableObject {
     @Published public var rightRumbleIntensity: Float = 0.0
     @Published public var currentFPS: Double = 60.0
     @Published public var packetsSent: UInt64 = 0
+    @Published public var linkHealth: LinkHealth = .healthy
     
     public init() {}
     

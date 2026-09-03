@@ -14,7 +14,7 @@ public struct RGBColorSlidersView: View {
             // Red Slider
             HStack(spacing: 12) {
                 Text("R")
-                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                    .font(.headline.monospaced().weight(.bold))
                     .foregroundColor(.red)
                     .frame(width: 18)
                 
@@ -28,14 +28,14 @@ public struct RGBColorSlidersView: View {
                 .accentColor(.red)
                 
                 Text("\(color.redByte)")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .font(.callout.monospaced().weight(.medium))
                     .frame(width: 36, alignment: .trailing)
             }
             
             // Green Slider
             HStack(spacing: 12) {
                 Text("G")
-                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                    .font(.headline.monospaced().weight(.bold))
                     .foregroundColor(.green)
                     .frame(width: 18)
                 
@@ -49,14 +49,14 @@ public struct RGBColorSlidersView: View {
                 .accentColor(.green)
                 
                 Text("\(color.greenByte)")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .font(.callout.monospaced().weight(.medium))
                     .frame(width: 36, alignment: .trailing)
             }
             
             // Blue Slider
             HStack(spacing: 12) {
                 Text("B")
-                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                    .font(.headline.monospaced().weight(.bold))
                     .foregroundColor(.blue)
                     .frame(width: 18)
                 
@@ -70,7 +70,7 @@ public struct RGBColorSlidersView: View {
                 .accentColor(.blue)
                 
                 Text("\(color.blueByte)")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .font(.callout.monospaced().weight(.medium))
                     .frame(width: 36, alignment: .trailing)
             }
         }
@@ -108,7 +108,7 @@ public struct ColorPresetsGridView: View {
                             .shadow(color: preset.color.color.opacity(0.6), radius: 3)
                         
                         Text(preset.name)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.subheadline.weight(.medium))
                             .lineLimit(1)
                             .foregroundColor(.primary)
                         

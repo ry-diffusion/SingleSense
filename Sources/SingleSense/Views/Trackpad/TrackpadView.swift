@@ -17,20 +17,20 @@ public struct TrackpadView: View {
             }
             .padding(20)
         }
-        .onAppear { trackpad.refreshPermission() }
     }
 
     private var header: some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: "cursorarrow.rays")
-                .font(.system(size: 26))
+                .font(.largeTitle)
                 .foregroundColor(.accentColor)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Touchpad as a Mac Trackpad")
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.title3.weight(.bold))
                 Text("Drives the macOS cursor from the DualSense touchpad, reading the two contact points straight out of the HID input report.")
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -41,6 +41,8 @@ public struct TrackpadView: View {
                 .toggleStyle(SwitchToggleStyle())
                 .labelsHidden()
                 .disabled(!trackpad.hasPermission)
+                .accessibilityLabel("Use touchpad as trackpad")
+                .accessibilityHint("Lets the controller's touchpad move the Mac pointer")
         }
         .padding(16)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
@@ -51,22 +53,24 @@ public struct TrackpadView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("SingleSense needs Accessibility permission to move the cursor and click.",
                   systemImage: "lock.shield")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.callout.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("macOS only lets an app post mouse events once it is trusted for Accessibility. Nothing else on this page works until then.")
-                .font(.system(size: 11))
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 10) {
-                Button("Request Permission") { trackpad.refreshPermission(prompt: true) }
-                    .font(.system(size: 11, weight: .semibold))
+                Button("Grant Access") { trackpad.requestPermission() }
+                    .buttonStyle(.borderedProminent)
                 Button("Open Privacy Settings") { trackpad.openPrivacySettings() }
-                    .font(.system(size: 11))
-                Button("Re-check") { trackpad.refreshPermission() }
-                    .font(.system(size: 11))
             }
+            .controlSize(.small)
+
+            Text("This page updates by itself once you allow it — no need to relaunch.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,7 +80,7 @@ public struct TrackpadView: View {
     private var settings: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Tuning")
-                .font(.system(size: 14, weight: .bold))
+                .font(.headline.weight(.bold))
 
             slider("Pointer Speed", value: $trackpad.sensitivity, range: 400...3200, unit: "px")
             slider("Scroll Speed", value: $trackpad.scrollSensitivity, range: 200...2000, unit: "px")
@@ -84,9 +88,9 @@ public struct TrackpadView: View {
             Divider()
 
             Toggle("Tap to click", isOn: $trackpad.tapToClick)
-                .font(.system(size: 12))
+                .font(.callout)
             Toggle("Natural scrolling", isOn: $trackpad.naturalScrolling)
-                .font(.system(size: 12))
+                .font(.callout)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -98,12 +102,14 @@ public struct TrackpadView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.callout.weight(.medium))
                 Spacer()
                 Text("\(Int(value.wrappedValue)) \(unit)")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .font(.callout.monospaced().weight(.bold))
             }
             Slider(value: value, in: range)
+                .accessibilityLabel(title)
+                .accessibilityValue("\(Int(value.wrappedValue)) \(unit)")
         }
     }
 
@@ -112,10 +118,10 @@ public struct TrackpadView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Live Contacts")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.headline.weight(.bold))
                 Spacer()
                 Text(trackpad.contactCount == 0 ? "No contact" : "\(trackpad.contactCount) finger\(trackpad.contactCount > 1 ? "s" : "")")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(trackpad.contactCount > 0 ? .green : .secondary)
             }
 
@@ -137,9 +143,17 @@ public struct TrackpadView: View {
             }
             // The DualSense pad is 1920 x 1080 units, so match its shape.
             .aspectRatio(1920.0 / 1080.0, contentMode: .fit)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Touchpad contacts")
+            .accessibilityValue(
+                trackpad.contactCount == 0
+                    ? "No contact"
+                    : "\(trackpad.contactCount) finger\(trackpad.contactCount > 1 ? "s" : "")"
+                        + (controllerState.buttonTouchpad ? ", pressed" : "")
+            )
 
             Text(controllerState.buttonTouchpad ? "Touchpad pressed" : "Press the pad to click")
-                .font(.system(size: 10))
+                .font(.caption)
                 .foregroundColor(.secondary)
         }
         .padding(16)
@@ -162,7 +176,7 @@ public struct TrackpadView: View {
     private var gestureReference: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Gestures")
-                .font(.system(size: 14, weight: .bold))
+                .font(.headline.weight(.bold))
             gestureRow("hand.point.up.left", "One finger", "Move the pointer")
             gestureRow("hand.tap", "One-finger tap", "Left click")
             gestureRow("hand.draw", "Two fingers", "Scroll")
@@ -179,16 +193,19 @@ public struct TrackpadView: View {
     private func gestureRow(_ icon: String, _ gesture: String, _ effect: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 12))
+                .accessibilityHidden(true)
+                .font(.callout)
                 .foregroundColor(.accentColor)
                 .frame(width: 20)
             Text(gesture)
-                .font(.system(size: 12, weight: .medium))
+                .font(.callout.weight(.medium))
                 .frame(width: 130, alignment: .leading)
             Text(effect)
-                .font(.system(size: 11))
+                .font(.subheadline)
                 .foregroundColor(.secondary)
             Spacer()
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(gesture): \(effect)")
     }
 }

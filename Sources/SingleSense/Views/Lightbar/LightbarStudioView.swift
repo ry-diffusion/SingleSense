@@ -8,6 +8,7 @@ public struct LightbarStudioView: View {
     @ObservedObject var controllerState = DualSenseManager.shared.controllerState
     @ObservedObject var rainbowEngine = RainbowEngine.shared
     @ObservedObject var audioEngine = AudioReactiveEngine.shared
+    @ObservedObject var permissionMonitor = PermissionMonitor.shared
     
     @State private var hexInput: String = ""
     
@@ -29,17 +30,17 @@ public struct LightbarStudioView: View {
                     VStack(spacing: 12) {
                         HStack {
                             Label("Live Lightbar Output", systemImage: "sparkles")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.headline)
                             
                             Spacer()
                             
                             HStack(spacing: 12) {
                                 Text("\(Int(controllerState.currentFPS)) FPS")
-                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                    .font(.subheadline.monospaced().weight(.bold))
                                     .foregroundColor(.green)
                                 
                                 Text(controllerState.currentLightbarColor.hexString)
-                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                    .font(.subheadline.monospaced().weight(.bold))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -55,6 +56,10 @@ public struct LightbarStudioView: View {
                                 .frame(height: 12)
                                 .shadow(color: controllerState.currentLightbarColor.color, radius: 10)
                         }
+                        // A picture of the hex value announced above it.
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Live lightbar colour")
+                        .accessibilityValue(controllerState.currentLightbarColor.hexString)
                     }
                     .padding(16)
                 }
@@ -63,7 +68,7 @@ public struct LightbarStudioView: View {
                 // Lighting Mode Selection
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Lighting Mode")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.headline.weight(.bold))
                     
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(LightingMode.allCases) { mode in
@@ -73,11 +78,11 @@ public struct LightbarStudioView: View {
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: mode.iconName)
-                                        .font(.system(size: 14))
+                                        .font(.body)
                                         .foregroundColor(manager.lightbarConfig.mode == mode ? .white : .accentColor)
                                     
                                     Text(mode.rawValue)
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.callout.weight(.semibold))
                                         .foregroundColor(manager.lightbarConfig.mode == mode ? .white : .primary)
                                     
                                     Spacer(minLength: 0)
@@ -104,10 +109,10 @@ public struct LightbarStudioView: View {
                         VStack(alignment: .leading, spacing: 14) {
                             HStack {
                                 Text("60 FPS Rainbow Settings")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.headline.weight(.bold))
                                 Spacer()
                                 Text("Ultra-Smooth HSV Rotation")
-                                    .font(.system(size: 11))
+                                    .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
                             
@@ -115,10 +120,10 @@ public struct LightbarStudioView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
                                     Text("Cycle Speed")
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.callout.weight(.medium))
                                     Spacer()
                                     Text(String(format: "%.1fx", manager.lightbarConfig.rainbowSpeed))
-                                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                        .font(.callout.monospaced().weight(.bold))
                                 }
                                 Slider(value: $manager.lightbarConfig.rainbowSpeed, in: 0.1...5.0, step: 0.1)
                             }
@@ -127,10 +132,10 @@ public struct LightbarStudioView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
                                     Text("Saturation")
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.callout.weight(.medium))
                                     Spacer()
                                     Text("\(Int(manager.lightbarConfig.rainbowSaturation * 100))%")
-                                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                        .font(.callout.monospaced().weight(.bold))
                                 }
                                 Slider(value: $manager.lightbarConfig.rainbowSaturation, in: 0.0...1.0)
                             }
@@ -139,10 +144,10 @@ public struct LightbarStudioView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
                                     Text("Brightness")
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.callout.weight(.medium))
                                     Spacer()
                                     Text("\(Int(manager.lightbarConfig.rainbowBrightness * 100))%")
-                                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                        .font(.callout.monospaced().weight(.bold))
                                 }
                                 Slider(value: $manager.lightbarConfig.rainbowBrightness, in: 0.0...1.0)
                             }
@@ -152,12 +157,12 @@ public struct LightbarStudioView: View {
                         VStack(alignment: .leading, spacing: 14) {
                             HStack {
                                 Text(manager.lightbarConfig.mode == .breathing ? "Breathing Color & Rate" : "Static Color Customizer")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.headline.weight(.bold))
                                 Spacer()
                                 // Hex Field
                                 HStack(spacing: 6) {
                                     Text("HEX:")
-                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .font(.subheadline.monospaced().weight(.bold))
                                         .foregroundColor(.secondary)
                                     TextField("#0066FF", text: $hexInput, onCommit: {
                                         manager.lightbarConfig.staticColor = RGBColor.fromHex(hexInput)
@@ -165,7 +170,7 @@ public struct LightbarStudioView: View {
                                     })
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .frame(width: 85)
-                                    .font(.system(size: 11, design: .monospaced))
+                                    .font(.subheadline.monospaced())
                                 }
                             }
                             
@@ -173,10 +178,10 @@ public struct LightbarStudioView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack {
                                         Text("Pulse Speed")
-                                            .font(.system(size: 12, weight: .medium))
+                                            .font(.callout.weight(.medium))
                                         Spacer()
                                         Text(String(format: "%.1fx", manager.lightbarConfig.breathingSpeed))
-                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                            .font(.callout.monospaced().weight(.bold))
                                     }
                                     Slider(value: $manager.lightbarConfig.breathingSpeed, in: 0.2...4.0, step: 0.1)
                                 }
@@ -191,7 +196,7 @@ public struct LightbarStudioView: View {
                             Divider()
                             
                             Text("Color Presets")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.callout.weight(.semibold))
                             
                             ColorPresetsGridView(selectedColor: $manager.lightbarConfig.staticColor) { newColor in
                                 hexInput = newColor.hexString
@@ -205,27 +210,27 @@ public struct LightbarStudioView: View {
                     case .batteryReactive:
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Battery Reactive Indicator")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.headline.weight(.bold))
                             Text("The controller lightbar automatically shifts color based on battery health: 100% (Green) -> 50% (Yellow) -> 20% (Red) -> Low (Pulsing Red).")
-                                .font(.system(size: 12))
+                                .font(.callout)
                                 .foregroundColor(.secondary)
                         }
                         
                     case .triggerReactive:
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Trigger Reactive Lighting")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.headline.weight(.bold))
                             Text("Lightbar shifts from cool cyan to high-energy crimson red in real-time as you pull the L2 and R2 triggers.")
-                                .font(.system(size: 12))
+                                .font(.callout)
                                 .foregroundColor(.secondary)
                         }
                         
                     case .strobe:
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Cyberpunk Strobe")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.headline.weight(.bold))
                             Text("Rapidly cycles high-intensity neon hues (Cyan, Magenta, Yellow) at high frequency.")
-                                .font(.system(size: 12))
+                                .font(.callout)
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -239,7 +244,7 @@ public struct LightbarStudioView: View {
                     // Player LEDs Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Player Indicator LEDs")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.headline.weight(.bold))
                         
                         Picker("Player Pattern", selection: $manager.lightbarConfig.playerLEDMode) {
                             ForEach(PlayerLEDMode.allCases) { mode in
@@ -269,7 +274,7 @@ public struct LightbarStudioView: View {
                     // Mic LED Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Microphone LED")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.headline.weight(.bold))
                         
                         Picker("Mic LED State", selection: $manager.lightbarConfig.micLEDMode) {
                             ForEach(MicLEDMode.allCases) { mode in
@@ -282,7 +287,7 @@ public struct LightbarStudioView: View {
                         }
                         
                         Text("Controls the small orange LED on the mute button below the PS logo.")
-                            .font(.system(size: 11))
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -305,22 +310,25 @@ public struct LightbarStudioView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Music Sync")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.headline.weight(.bold))
                 Spacer()
                 captureStatusBadge
             }
 
-            Text("Reads the system audio mix through ScreenCaptureKit, so it follows whatever is playing — Spotify, Apple Music, a browser tab or a game.")
-                .font(.system(size: 11))
+            Text("Reads the system audio mix through Core Audio, so it follows whatever is playing — Spotify, Apple Music, a browser tab or a game.")
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if case .permissionRequired = audioEngine.status {
                 permissionCallout
             }
+            if case .relaunchRequired = audioEngine.status {
+                relaunchCallout
+            }
             if case .failed(let message) = audioEngine.status {
                 Label(message, systemImage: "exclamationmark.triangle.fill")
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .foregroundColor(.orange)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -328,7 +336,7 @@ public struct LightbarStudioView: View {
             Divider()
 
             Text("Style")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.callout.weight(.semibold))
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 165), spacing: 10)], spacing: 10) {
                 ForEach(MusicSyncStyle.allCases) { style in
@@ -339,10 +347,10 @@ public struct LightbarStudioView: View {
                     }) {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(style.rawValue)
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.callout.weight(.semibold))
                                 .foregroundColor(selected ? .white : .primary)
                             Text(style.detail)
-                                .font(.system(size: 10))
+                                .font(.caption)
                                 .foregroundColor(selected ? .white.opacity(0.85) : .secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .multilineTextAlignment(.leading)
@@ -363,7 +371,7 @@ public struct LightbarStudioView: View {
 
             HStack {
                 Text("Player Indicator Row")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.callout.weight(.semibold))
                 Spacer()
                 indicatorPreview
             }
@@ -380,14 +388,14 @@ public struct LightbarStudioView: View {
             }
 
             Text(manager.lightbarConfig.playerLEDAudioStyle.detail)
-                .font(.system(size: 10))
+                .font(.caption)
                 .foregroundColor(.secondary)
 
             Divider()
 
             HStack {
                 Text("Haptics")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.callout.weight(.semibold))
                 Spacer()
                 motorPreview
             }
@@ -404,17 +412,17 @@ public struct LightbarStudioView: View {
             }
 
             Text(manager.lightbarConfig.musicHapticsStyle.detail)
-                .font(.system(size: 10))
+                .font(.caption)
                 .foregroundColor(.secondary)
 
             if manager.lightbarConfig.musicHapticsStyle != .off {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Rumble Intensity")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.callout.weight(.medium))
                         Spacer()
                         Text("\(Int(manager.lightbarConfig.musicHapticsIntensity * 100))%")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .font(.callout.monospaced().weight(.bold))
                     }
                     Slider(value: $manager.lightbarConfig.musicHapticsIntensity, in: 0.0...1.0) { _ in
                         manager.applyLightbarConfiguration()
@@ -423,14 +431,14 @@ public struct LightbarStudioView: View {
 
                 Label("Continuous rumble drains the controller noticeably faster.",
                       systemImage: "battery.25")
-                    .font(.system(size: 10))
+                    .font(.caption)
                     .foregroundColor(.secondary)
             }
 
             Divider()
 
             Text("Live Spectrum")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.callout.weight(.semibold))
             spectrumMeters
 
             Divider()
@@ -438,10 +446,10 @@ public struct LightbarStudioView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Sensitivity")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.callout.weight(.medium))
                     Spacer()
                     Text(String(format: "%.2fx", manager.lightbarConfig.audioSensitivity))
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .font(.callout.monospaced().weight(.bold))
                 }
                 Slider(value: $manager.lightbarConfig.audioSensitivity, in: 0.25...4.0, step: 0.05) { _ in
                     manager.applyLightbarConfiguration()
@@ -451,10 +459,10 @@ public struct LightbarStudioView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Smoothing")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.callout.weight(.medium))
                     Spacer()
                     Text("\(Int(manager.lightbarConfig.audioSmoothing * 100))%")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .font(.callout.monospaced().weight(.bold))
                 }
                 Slider(value: $manager.lightbarConfig.audioSmoothing, in: 0.0...1.0) { _ in
                     manager.applyLightbarConfiguration()
@@ -464,10 +472,10 @@ public struct LightbarStudioView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Floor Brightness")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.callout.weight(.medium))
                     Spacer()
                     Text("\(Int(manager.lightbarConfig.audioMinimumBrightness * 100))%")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .font(.callout.monospaced().weight(.bold))
                 }
                 Slider(value: $manager.lightbarConfig.audioMinimumBrightness, in: 0.0...0.5)
             }
@@ -476,7 +484,7 @@ public struct LightbarStudioView: View {
                 || manager.lightbarConfig.musicSyncStyle == .beatFlash {
                 Divider()
                 Text("Base Color")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.callout.weight(.semibold))
                 RGBColorSlidersView(color: $manager.lightbarConfig.staticColor) { _ in
                     hexInput = manager.lightbarConfig.staticColor.hexString
                 }
@@ -495,6 +503,7 @@ public struct LightbarStudioView: View {
             case .starting: return ("Starting…", .orange)
             case .running: return ("Listening", .green)
             case .permissionRequired: return ("Permission needed", .orange)
+            case .relaunchRequired: return ("Relaunch needed", .orange)
             case .failed: return ("Error", .red)
             }
         }()
@@ -502,30 +511,70 @@ public struct LightbarStudioView: View {
         HStack(spacing: 5) {
             Circle().fill(descriptor.1).frame(width: 7, height: 7)
             Text(descriptor.0)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundColor(descriptor.1)
         }
     }
 
     @ViewBuilder
     private var permissionCallout: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(
-                "SingleSense needs Screen Recording permission to read the system audio mix. No video is captured or stored.",
-                systemImage: "lock.shield"
-            )
-            .font(.system(size: 11))
-            .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 10) {
+            Label("System Audio Recording Required", systemImage: "waveform.circle.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.orange)
 
-            Button("Open Privacy Settings") {
-                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
-                    NSWorkspace.shared.open(url)
+            Text("SingleSense reads the system audio output in memory to synchronize controller lighting and haptics. No video or screen is accessed, and audio is never recorded or transmitted.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 10) {
+                Button("Request Access") {
+                    audioEngine.requestPermission()
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Open System Settings") {
+                    audioEngine.openPrivacySettings()
                 }
             }
-            .font(.system(size: 11, weight: .semibold))
+            .controlSize(.small)
+
+            Text("In System Settings, go to Privacy & Security → System Audio Recording Only and turn on SingleSense.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.12)))
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.12)))
+    }
+
+    /// Shown once the permission is ticked in System Settings but this process still
+    /// cannot use it, which is every time the grant arrives after launch.
+    @ViewBuilder
+    private var relaunchCallout: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Relaunch Required", systemImage: "arrow.clockwise.circle.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.orange)
+
+            Text("Screen Recording has been allowed, but macOS requires reopening SingleSense before audio capture can start.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack {
+                Button("Relaunch SingleSense") {
+                    audioEngine.relaunchApp()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+
+                Spacer()
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.12)))
     }
 
     /// Mirrors the row the controller is showing, resolved through the very
@@ -534,7 +583,9 @@ public struct LightbarStudioView: View {
     private var indicatorPreview: some View {
         let levels = audioEngine.displayLevels
         let mask = manager.lightbarConfig.playerLEDMask(level: levels.overall, beat: levels.beat)
-        HStack(spacing: 5) {
+        let litCount = (0..<PlayerLEDIndicator.lampCount)
+            .filter { (mask >> UInt8($0)) & 1 == 1 }.count
+        return HStack(spacing: 5) {
             ForEach(0..<PlayerLEDIndicator.lampCount, id: \.self) { index in
                 let lit = (mask >> UInt8(index)) & 1 == 1
                 Circle()
@@ -543,6 +594,9 @@ public struct LightbarStudioView: View {
                     .shadow(color: lit ? .white.opacity(0.8) : .clear, radius: 3)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Player indicator preview")
+        .accessibilityValue("\(litCount) of \(PlayerLEDIndicator.lampCount) lamps lit")
     }
 
     /// Live motor levels, resolved through the same function that fills the
@@ -563,13 +617,16 @@ public struct LightbarStudioView: View {
         let clamped = CGFloat(max(0, min(1, value)))
         return HStack(spacing: 4) {
             Text(label)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .font(.caption2.monospaced().weight(.bold))
                 .foregroundColor(.secondary)
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.secondary.opacity(0.18)).frame(width: 34, height: 6)
                 Capsule().fill(Color.orange).frame(width: 34 * clamped, height: 6)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label == "L" ? "Left motor" : "Right motor")
+        .accessibilityValue("\(Int(clamped * 100)) percent")
     }
 
     @ViewBuilder
@@ -587,7 +644,7 @@ public struct LightbarStudioView: View {
         let clamped = CGFloat(max(0, min(1, value)))
         return HStack(spacing: 10) {
             Text(title)
-                .font(.system(size: 11, weight: .medium))
+                .font(.subheadline.weight(.medium))
                 .frame(width: 46, alignment: .leading)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -597,10 +654,13 @@ public struct LightbarStudioView: View {
             }
             .frame(height: 8)
             Text("\(Int(clamped * 100))%")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(.caption.monospaced().weight(.bold))
                 .foregroundColor(.secondary)
                 .frame(width: 38, alignment: .trailing)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue("\(Int(clamped * 100)) percent")
     }
 
 }

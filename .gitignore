@@ -1,10 +1,6 @@
-# Swift Package Manager
-.build/
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-Package.resolved
-
 # Xcode
+.build/
+build/
 DerivedData/
 *.xcuserstate
 *.xcuserdatad/
@@ -17,8 +13,13 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
-# Build product — regenerate with scripts/build_app.sh
+# Xcode project user state (the shared scheme is committed)
+SingleSense.xcodeproj/xcuserdata/
+SingleSense.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Build products
 SingleSense.app/
+*.xcarchive
 
 # macOS
 .DS_Store
@@ -31,3 +32,6 @@ SingleSense.app/
 *~
 .idea/
 .vscode/
+
+# Leftovers from the SwiftPM layout — safe to delete
+_to_delete/

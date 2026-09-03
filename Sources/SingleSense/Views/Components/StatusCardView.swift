@@ -29,10 +29,10 @@ public struct BatteryIndicatorView: View {
         HStack(spacing: 6) {
             Image(systemName: batteryIconName)
                 .foregroundColor(batteryColor)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.headline)
             
             Text("\(Int(level * 100))%")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(.body.weight(.medium))
                 .foregroundColor(.primary)
         }
         .padding(.horizontal, 8)
@@ -63,14 +63,14 @@ public struct ConnectionBadgeView: View {
             if isConnected {
                 HStack(spacing: 4) {
                     Image(systemName: type.iconName)
-                        .font(.system(size: 12))
+                        .font(.callout)
                     Text("\(type.rawValue)")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.callout.weight(.medium))
                 }
                 .foregroundColor(.secondary)
             } else {
                 Text("Disconnected")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.callout.weight(.medium))
                     .foregroundColor(.secondary)
             }
         }

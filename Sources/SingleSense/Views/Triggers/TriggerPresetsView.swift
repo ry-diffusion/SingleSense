@@ -14,7 +14,7 @@ public struct TriggerPresetsView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Weapon & Mechanical Presets")
-                .font(.system(size: 14, weight: .bold))
+                .font(.headline.weight(.bold))
             
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(TriggerPresets.all) { preset in
@@ -24,33 +24,33 @@ public struct TriggerPresetsView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 8) {
                                 Image(systemName: preset.iconName)
-                                    .font(.system(size: 16))
+                                    .font(.title3)
                                     .foregroundColor(.accentColor)
                                     .frame(width: 24, height: 24)
                                 
                                 Text(preset.name)
-                                    .font(.system(size: 13, weight: .bold))
+                                    .font(.headline.weight(.bold))
                                     .foregroundColor(.primary)
                                 
                                 Spacer(minLength: 0)
                             }
                             
                             Text(preset.description)
-                                .font(.system(size: 11))
+                                .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .lineLimit(2)
                                 .fixedSize(horizontal: false, vertical: true)
                             
                             HStack(spacing: 8) {
                                 Text("L2: \(preset.leftConfig.mode.rawValue)")
-                                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                                    .font(.caption2.monospaced().weight(.semibold))
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.secondary.opacity(0.15))
                                     .cornerRadius(4)
                                 
                                 Text("R2: \(preset.rightConfig.mode.rawValue)")
-                                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                                    .font(.caption2.monospaced().weight(.semibold))
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.secondary.opacity(0.15))

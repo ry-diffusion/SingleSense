@@ -17,9 +17,9 @@ public struct ProfilesView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Controller Profiles")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.title3.weight(.bold))
                         Text("Save and switch complete controller setups instantly.")
-                            .font(.system(size: 12))
+                            .font(.callout)
                             .foregroundColor(.secondary)
                     }
                     
@@ -31,7 +31,7 @@ public struct ProfilesView: View {
                         showingNewProfileSheet = true
                     }) {
                         Label("New Profile", systemImage: "plus")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                     }
                     .buttonStyle(BorderedProminentButtonStyle())
                 }
@@ -45,7 +45,7 @@ public struct ProfilesView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 Image(systemName: profile.iconName)
-                                    .font(.system(size: 18))
+                                    .font(.title2)
                                     .foregroundColor(isActive ? .accentColor : .secondary)
                                     .frame(width: 28, height: 28)
                                     .background(Color.secondary.opacity(0.1))
@@ -53,12 +53,12 @@ public struct ProfilesView: View {
                                 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(profile.name)
-                                        .font(.system(size: 13, weight: .bold))
+                                        .font(.headline.weight(.bold))
                                         .foregroundColor(.primary)
                                     
                                     if isActive {
                                         Text("ACTIVE")
-                                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                            .font(.caption2.monospaced().weight(.bold))
                                             .foregroundColor(.green)
                                     }
                                 }
@@ -92,7 +92,7 @@ public struct ProfilesView: View {
                             }
                             
                             Text(profile.description)
-                                .font(.system(size: 11))
+                                .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .lineLimit(2)
                                 .frame(height: 28, alignment: .topLeading)
@@ -100,14 +100,14 @@ public struct ProfilesView: View {
                             // Configuration Badges
                             HStack(spacing: 6) {
                                 Text("LED: \(profile.lightbar.mode.rawValue)")
-                                    .font(.system(size: 9, weight: .semibold))
+                                    .font(.caption2.weight(.semibold))
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.secondary.opacity(0.12))
                                     .cornerRadius(4)
                                 
                                 Text("R2: \(profile.rightTrigger.mode.rawValue)")
-                                    .font(.system(size: 9, weight: .semibold))
+                                    .font(.caption2.weight(.semibold))
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.secondary.opacity(0.12))
@@ -123,7 +123,7 @@ public struct ProfilesView: View {
                                 HStack {
                                     Spacer()
                                     Text(isActive ? "Currently Active" : "Activate Profile")
-                                        .font(.system(size: 11, weight: .semibold))
+                                        .font(.subheadline.weight(.semibold))
                                     Spacer()
                                 }
                                 .padding(.vertical, 6)
@@ -148,7 +148,7 @@ public struct ProfilesView: View {
         .sheet(isPresented: $showingNewProfileSheet) {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Create New Profile")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.title3.weight(.bold))
                 
                 TextField("Profile Name", text: $newProfileName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())

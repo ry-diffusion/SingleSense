@@ -39,7 +39,7 @@ public struct MainView: View {
             List(NavigationItem.allCases, selection: $selectedItem) { item in
                 NavigationLink(value: item) {
                     Label(item.rawValue, systemImage: item.iconName)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.body.weight(.medium))
                 }
             }
             .listStyle(SidebarListStyle())
@@ -52,14 +52,14 @@ public struct MainView: View {
                         .frame(width: 8, height: 8)
                     
                     Text(controllerState.isConnected ? controllerState.model.shortName : "No Controller")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.subheadline.weight(.medium))
                         .lineLimit(1)
                     
                     Spacer()
                     
                     if controllerState.isConnected {
                         Text("\(Int(controllerState.batteryLevel * 100))%")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .font(.caption.weight(.bold))
                             .foregroundColor(.secondary)
                     }
                 }

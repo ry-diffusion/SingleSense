@@ -45,7 +45,10 @@ public final class RainbowEngine: ObservableObject {
             calculatedFPS = Double(frameCount) / fpsElapsed
             frameCount = 0
             lastFpsCalculationTime = now
-            DualSenseManager.shared.controllerState.currentFPS = calculatedFPS
+            let measured = calculatedFPS
+            publishOnNextRunLoopTurn {
+                DualSenseManager.shared.controllerState.currentFPS = measured
+            }
         }
         
         guard let onColorTick = self.onColorTick else { return }
@@ -58,14 +61,19 @@ public final class RainbowEngine: ObservableObject {
         // If in static color mode and not in dynamic test, avoid streaming 60 identical packets/sec
         if config.mode == .staticColor && !manager.isTriggerDynoTestActive {
             if currentDisplayColor != config.staticColor {
-                currentDisplayColor = config.staticColor
-                onColorTick(config.staticColor)
+                let colour = config.staticColor
+                publishOnNextRunLoopTurn { [weak self] in
+                    self?.currentDisplayColor = colour
+                }
+                onColorTick(colour)
             }
             return
         }
         
         let nextColor = calculateColor(for: config, elapsed: elapsed)
-        currentDisplayColor = nextColor
+        publishOnNextRunLoopTurn { [weak self] in
+            self?.currentDisplayColor = nextColor
+        }
         onColorTick(nextColor)
     }
     
@@ -112,7 +120,7 @@ public final class RainbowEngine: ObservableObject {
         }
     }
 
-    public func calculateColor(for config: LightbarConfiguration, elapsed: TimeInterval) -> RGBColor {
+    public func calculateColor(for config: LightbarConfiguration, elapsed: TimeInterval, controllerState: ControllerState? = nil) -> RGBColor {
         switch config.mode {
         case .staticColor:
             return config.staticColor
@@ -139,7 +147,8 @@ public final class RainbowEngine: ObservableObject {
             )
             
         case .batteryReactive:
-            let battery = Double(DualSenseManager.shared.controllerState.batteryLevel)
+            let state = controllerState ?? DualSenseManager.shared.controllerState
+            let battery = Double(state.batteryLevel)
             if battery > 0.5 {
                 // Green to Yellow transition
                 let t = (battery - 0.5) * 2.0
@@ -155,8 +164,9 @@ public final class RainbowEngine: ObservableObject {
             }
             
         case .triggerReactive:
-            let l2 = Double(DualSenseManager.shared.controllerState.triggerL2)
-            let r2 = Double(DualSenseManager.shared.controllerState.triggerR2)
+            let state = controllerState ?? DualSenseManager.shared.controllerState
+            let l2 = Double(state.triggerL2)
+            let r2 = Double(state.triggerR2)
             let maxTrigger = max(l2, r2)
             
             // Hue shifts smoothly: Green (0.333) -> Yellow (0.166) -> Orange -> Red (0.0)

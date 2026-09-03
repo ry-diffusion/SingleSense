@@ -29,10 +29,10 @@ public struct TriggerStudioView: View {
                 VStack(spacing: 12) {
                     HStack {
                         Label("Real-time Trigger Benchmark", systemImage: "gauge.with.needle.fill")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.headline)
                         Spacer()
                         Text("Squeeze physical L2 / R2 to test active resistance")
-                            .font(.system(size: 11))
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                     
@@ -90,7 +90,7 @@ public struct TriggerStudioView: View {
                 // Mode Selection
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Trigger Mode (\(selectedTriggerIndex == 0 ? "L2" : "R2"))")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.headline.weight(.bold))
                     
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 10)], spacing: 10) {
                         ForEach(TriggerModeType.allCases) { mode in
@@ -100,11 +100,11 @@ public struct TriggerStudioView: View {
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: mode.iconName)
-                                        .font(.system(size: 13))
+                                        .font(.body)
                                         .foregroundColor(activeConfigBinding.wrappedValue.mode == mode ? .white : .accentColor)
                                     
                                     Text(mode.rawValue)
-                                        .font(.system(size: 11, weight: .semibold))
+                                        .font(.subheadline.weight(.semibold))
                                         .foregroundColor(activeConfigBinding.wrappedValue.mode == mode ? .white : .primary)
                                     
                                     Spacer(minLength: 0)
@@ -127,12 +127,12 @@ public struct TriggerStudioView: View {
                 // Parameter Sliders for Active Mode
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Mode Parameters")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.headline.weight(.bold))
                     
                     switch activeConfigBinding.wrappedValue.mode {
                     case .off:
                         Text("No resistance or haptic effect active on this trigger.")
-                            .font(.system(size: 12))
+                            .font(.callout)
                             .foregroundColor(.secondary)
                         
                     case .feedback:
@@ -276,14 +276,14 @@ public struct TriggerStudioView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(label)
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .font(.subheadline.monospaced().weight(.bold))
                     .foregroundColor(isSelected ? .accentColor : .primary)
                 Spacer()
                 Text(config.mode.rawValue)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundColor(.secondary)
                 Text("\(Int(value * 100))%")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .font(.subheadline.monospaced().weight(.bold))
                     .foregroundColor(.primary)
             }
             
@@ -345,14 +345,28 @@ public struct TriggerStudioView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.callout.weight(.medium))
                 Spacer()
                 Text(String(format: format, value.wrappedValue * multiplier))
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .font(.callout.monospaced().weight(.bold))
             }
-            Slider(value: value, in: range) { _ in
-                manager.applyTriggerConfiguration()
-            }
+            // Pushing only on release meant you could not feel the effect
+            // while dialling it in — which is exactly when it helps.
+            Slider(
+                value: Binding(
+                    get: { value.wrappedValue },
+                    set: { newValue in
+                        value.wrappedValue = newValue
+                        manager.applyTriggerConfiguration()
+                    }
+                ),
+                in: range
+            )
+            .accessibilityLabel(title)
+            .accessibilityValue(String(format: format, value.wrappedValue * multiplier))
         }
+        // The caption above the slider is the same information VoiceOver
+        // already reads from the control itself.
+        .accessibilityElement(children: .contain)
     }
 }

@@ -23,15 +23,15 @@ public struct TriggerDynoTestCardView: View {
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: "gauge.with.dots.needle.bottom.50percent")
-                        .font(.system(size: 18))
+                        .font(.title2)
                         .foregroundColor(manager.isTriggerDynoTestActive ? .green : .accentColor)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Interactive Trigger & Haptic Dyno Test")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.headline.weight(.bold))
                         
                         Text("Squeeze L2 or R2: the colour sweeps from green to red and the rumble speeds up with your finger.")
-                            .font(.system(size: 11))
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                 }
@@ -48,7 +48,7 @@ public struct TriggerDynoTestCardView: View {
                             .frame(width: 8, height: 8)
                         
                         Text(manager.isTriggerDynoTestActive ? "Dyno Test: ACTIVE" : "Start Dyno Test")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.callout.weight(.bold))
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -69,10 +69,10 @@ public struct TriggerDynoTestCardView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text("Lightbar Colour Spectrum (Green → Red)")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.subheadline.weight(.semibold))
                             Spacer()
                             Text(String(format: "%.0f%% pressure", activeTriggerValue * 100))
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.subheadline.monospaced().weight(.bold))
                                 .foregroundColor(controllerState.currentLightbarColor.color)
                         }
                         
@@ -119,10 +119,10 @@ public struct TriggerDynoTestCardView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text("Rumble / Haptic Speed")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.subheadline.weight(.semibold))
                             Spacer()
                             Text(activeTriggerValue > 0.03 ? "\(vibrationFrequencyHz) Hz / \(Int(activeTriggerValue * 100))% Rumble" : "Silent (0 Hz)")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.subheadline.monospaced().weight(.bold))
                                 .foregroundColor(activeTriggerValue > 0.03 ? .orange : .secondary)
                         }
                         
@@ -150,21 +150,21 @@ public struct TriggerDynoTestCardView: View {
                     HStack(spacing: 16) {
                         HStack(spacing: 6) {
                             Text("L2:")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.subheadline.monospaced().weight(.bold))
                             ProgressView(value: Double(controllerState.triggerL2))
                                 .accentColor(.green)
                             Text("\(Int(controllerState.triggerL2 * 100))%")
-                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                .font(.caption.monospaced().weight(.semibold))
                                 .frame(width: 32)
                         }
                         
                         HStack(spacing: 6) {
                             Text("R2:")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.subheadline.monospaced().weight(.bold))
                             ProgressView(value: Double(controllerState.triggerR2))
                                 .accentColor(.green)
                             Text("\(Int(controllerState.triggerR2 * 100))%")
-                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                .font(.caption.monospaced().weight(.semibold))
                                 .frame(width: 32)
                         }
                     }

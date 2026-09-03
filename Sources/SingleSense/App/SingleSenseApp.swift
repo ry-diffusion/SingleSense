@@ -39,6 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Ensure the app runs as a full regular GUI app with Dock icon and windows
         NSApp.setActivationPolicy(.regular)
         
+        PermissionMonitor.shared.start()
         DualSenseManager.shared.start()
         
         // Bring window to front and activate

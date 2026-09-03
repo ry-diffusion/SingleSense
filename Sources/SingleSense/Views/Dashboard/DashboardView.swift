@@ -16,7 +16,9 @@ public struct DashboardView: View {
                 HStack(alignment: .center, spacing: 16) {
                     // Controller Glyph & Model
                     Image(systemName: "gamecontroller.fill")
-                        .font(.system(size: 28))
+                        .font(.largeTitle)
+                        // The model name sits right beside it.
+                        .accessibilityHidden(true)
                         .foregroundColor(controllerState.isConnected ? .accentColor : .secondary)
                         .frame(width: 48, height: 48)
                         .background(Color.secondary.opacity(0.1))
@@ -24,11 +26,27 @@ public struct DashboardView: View {
                     
                     VStack(alignment: .leading, spacing: 3) {
                         Text(controllerState.model.rawValue)
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.title3.weight(.bold))
                         
-                        Text(controllerState.isConnected ? "Active & Synchronized" : "Connect DualSense via USB or Bluetooth")
-                            .font(.system(size: 12))
-                            .foregroundColor(controllerState.isConnected ? .green : .secondary)
+                        // A congested link still counts as connected, so the
+                        // subtitle says what is actually wrong rather than
+                        // claiming the controller went away.
+                        if controllerState.isConnected, controllerState.linkHealth.isProblem {
+                            Label(
+                                controllerState.linkHealth == .congested
+                                    ? "Connected — some updates are being dropped"
+                                    : "Connected — the controller is not accepting updates",
+                                systemImage: controllerState.linkHealth.iconName
+                            )
+                            .font(.callout)
+                            .foregroundColor(controllerState.linkHealth == .congested ? .orange : .red)
+                            .accessibilityLabel("Link status")
+                            .accessibilityValue(controllerState.linkHealth.rawValue)
+                        } else {
+                            Text(controllerState.isConnected ? "Active & Synchronized" : "Connect DualSense via USB or Bluetooth")
+                                .font(.callout)
+                                .foregroundColor(controllerState.isConnected ? .green : .secondary)
+                        }
                     }
                     
                     Spacer()
@@ -60,7 +78,7 @@ public struct DashboardView: View {
                 // Quick Control & Customization Bar
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Quick Controls")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.headline.weight(.bold))
                     
                     HStack(spacing: 12) {
                         // Rainbow Toggle
@@ -76,7 +94,7 @@ public struct DashboardView: View {
                                 Image(systemName: "rainbow")
                                 Text(manager.lightbarConfig.mode == .rainbow ? "Rainbow: ON" : "Rainbow: OFF")
                             }
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(manager.lightbarConfig.mode == .rainbow ? Color.accentColor : Color.secondary.opacity(0.12))
@@ -97,7 +115,7 @@ public struct DashboardView: View {
                                 Image(systemName: "scope")
                                 Text("Gun Preset")
                             }
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(Color.secondary.opacity(0.12))
@@ -115,7 +133,7 @@ public struct DashboardView: View {
                                 Image(systemName: "arrow.counterclockwise")
                                 Text("Reset Triggers")
                             }
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(Color.secondary.opacity(0.12))
@@ -131,7 +149,7 @@ public struct DashboardView: View {
                                 Image(systemName: "waveform.path")
                                 Text("Test Haptic")
                             }
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(Color.secondary.opacity(0.12))

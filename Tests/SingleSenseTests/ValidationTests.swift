@@ -16,8 +16,7 @@ final class ValidationTests: XCTestCase {
       "endStrength": 99.0,
       "frequency": 999999.0,
       "amplitude": -0.5,
-      "custom10Zones": [3.0, -2.0, 0.5],
-      "custom10Vibrations": [1,2,3,4,5,6,7,8,9,10,11,12]
+      "custom10Zones": [3.0, -2.0, 0.5]
     }
     """
 
@@ -39,9 +38,7 @@ final class ValidationTests: XCTestCase {
             SingleTriggerConfig.self, from: Data(hostileJSON.utf8)
         )
         XCTAssertEqual(config.custom10Zones.count, DSTriggerEffect.zoneCount)
-        XCTAssertEqual(config.custom10Vibrations.count, DSTriggerEffect.zoneCount)
         XCTAssertTrue(config.custom10Zones.allSatisfy { (0...1).contains($0) })
-        XCTAssertTrue(config.custom10Vibrations.allSatisfy { (0...1).contains($0) })
     }
 
     func testColourDecodingClamps() throws {

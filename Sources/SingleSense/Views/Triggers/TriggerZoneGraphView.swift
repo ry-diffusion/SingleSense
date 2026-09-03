@@ -17,10 +17,10 @@ public struct TriggerZoneGraphView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(isVibration ? "10-Zone Positional Vibration Profile" : "10-Zone Positional Resistance Profile")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.callout.weight(.semibold))
                 Spacer()
                 Text("Zone 0 (Start) → Zone 9 (Bottom Out)")
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             
@@ -62,12 +62,12 @@ public struct TriggerZoneGraphView: View {
                             
                             // Zone Label
                             Text("Z\(index)")
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .font(.caption2.monospaced().weight(.bold))
                                 .foregroundColor(.secondary)
                             
                             // Percent
                             Text("\(Int(value * 100))%")
-                                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                .font(.caption2.monospaced().weight(.medium))
                                 .foregroundColor(.secondary)
                         }
                     }

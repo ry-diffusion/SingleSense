@@ -10,7 +10,6 @@ public struct SingleTriggerConfig: Codable, Equatable {
     public var frequency: Float = 25.0             // 1 ... 255 Hz
     public var amplitude: Float = 0.7              // 0.0 ... 1.0 (Vibration)
     public var custom10Zones: [Float] = [0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 1.0, 1.0]
-    public var custom10Vibrations: [Float] = [0.0, 0.0, 0.0, 0.3, 0.5, 0.8, 1.0, 0.8, 0.5, 0.2]
     
     public init(mode: TriggerModeType = .off) {
         self.mode = mode
@@ -209,7 +208,6 @@ extension SingleTriggerConfig {
         copy.frequency = frequency.isFinite ? min(max(frequency, 1), 255) : 1
 
         copy.custom10Zones = Self.normalizedZones(custom10Zones)
-        copy.custom10Vibrations = Self.normalizedZones(custom10Vibrations)
         return copy
     }
 
@@ -234,9 +232,6 @@ extension SingleTriggerConfig {
         config.amplitude = try container.decodeIfPresent(Float.self, forKey: .amplitude) ?? 0.7
         if let zones = try container.decodeIfPresent([Float].self, forKey: .custom10Zones) {
             config.custom10Zones = zones
-        }
-        if let vibrations = try container.decodeIfPresent([Float].self, forKey: .custom10Vibrations) {
-            config.custom10Vibrations = vibrations
         }
         self = config.sanitized()
     }

@@ -37,7 +37,7 @@ The **five player LEDs** join in as a meter — filling from the left, growing o
 
 And if you want to *feel* the music, switch on **rumble**: bass goes to the heavy motor on the left, treble to the light one on the right. It ships off, because continuous rumble drains the battery noticeably faster.
 
-> The first time, macOS will ask for **Screen Recording** permission. That's how the system lets an app listen to audio — no video is captured or stored.
+> The first time, macOS will ask for **System Audio Recording** permission. SingleSense uses Apple's native Core Audio Process Taps to listen to the system mix directly — no screen or video recording permission is needed.
 
 ### 🎯 Adaptive triggers
 
@@ -85,13 +85,18 @@ Everything is reachable from the menu bar icon too, without opening the window.
 
 ## Getting started
 
-You'll need a Mac running **macOS 13 (Ventura)** or later, with Xcode installed.
+You'll need a Mac running **macOS 14.2 (Sonoma)** or later, with Xcode installed.
 
 ```bash
 git clone https://github.com/ry-diffusion/SingleSense.git
 cd SingleSense
-bash scripts/build_app.sh
-open SingleSense.app
+open SingleSense.xcodeproj
+```
+
+Then hit **Run** (⌘R). Prefer the terminal?
+
+```bash
+xcodebuild -project SingleSense.xcodeproj -scheme SingleSense -configuration Release build
 ```
 
 Connect the DualSense over **USB** or **Bluetooth** — both work, and the app figures out which one on its own. It supports the standard DualSense and the **DualSense Edge**, including the back paddles.
@@ -102,7 +107,7 @@ A couple of features ask the system for permission the first time:
 
 | Feature | Permission | Why |
 |---|---|---|
-| Music Sync | Screen Recording | It's how macOS grants access to system audio |
+| Music Sync | System Audio Recording Only | Uses Core Audio Process Taps to read the system mix without screen capture |
 | Trackpad | Accessibility | Required to move the cursor and click |
 
 One caveat: the app is signed locally (ad-hoc), so macOS may ask again after each rebuild. With an Apple developer account that stops happening.
@@ -111,20 +116,25 @@ One caveat: the app is signed locally (ad-hoc), so macOS may ask again after eac
 
 ## For anyone digging into the code
 
-It's a plain Swift package:
+It's a plain Xcode project — one app target and one unit-test target, no dependencies:
 
 ```bash
-swift build     # build
-swift test      # run the test suite
+xcodebuild -project SingleSense.xcodeproj -scheme SingleSense build   # build
+xcodebuild -project SingleSense.xcodeproj -scheme SingleSense test    # run the test suite
 ```
+
+Signing is set to **Sign to Run Locally** (ad-hoc), so it builds on a clean machine with no developer account. Set your team in *Signing & Capabilities* if you want a stable signature.
 
 Talking to the controller is done over raw HID, following the Linux kernel driver (`hid-playstation.c`) and `dualsensectl` as the reference for the packet format. The test suite has **92 tests** checking, byte by byte, what goes out to the controller — offsets, enable bits, checksum, the encoding of every trigger effect, sensor calibration and the trackpad gestures.
 
 ```
 Sources/SingleSense/
+├── App/         entry point and menu bar
 ├── Models/      configuration and state types
 ├── Services/    HID driver, audio and lighting engines, trackpad
 └── Views/       the interface
+Tests/SingleSenseTests/
+Resources/Info.plist
 ```
 
 ---

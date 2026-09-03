@@ -1,8 +1,10 @@
 import Foundation
 import Combine
 import Accelerate
-import AVFoundation
-import ScreenCaptureKit
+import CoreAudio
+import AudioToolbox
+import QuartzCore
+import AppKit
 
 /// Frequency-band energies extracted from the system audio mix, all normalised
 /// to `0...1` after automatic gain control.
@@ -95,8 +97,9 @@ public enum AudioCaptureStatus: Equatable {
     case idle
     case starting
     case running
-    /// Screen Recording permission has not been granted to SingleSense.
+    /// System Audio Recording permission has not been granted.
     case permissionRequired
+    case relaunchRequired
     case failed(String)
 
     public var isActive: Bool {
@@ -104,12 +107,12 @@ public enum AudioCaptureStatus: Equatable {
     }
 }
 
-/// Taps the system audio mix through ScreenCaptureKit and reduces it to the
+/// Taps the system audio mix through native Core Audio Process Taps and reduces it to the
 /// handful of numbers the lightbar needs.
 ///
-/// ScreenCaptureKit is the only way to observe system output on macOS without
-/// asking the user to install a loopback audio driver. It is gated behind the
-/// Screen Recording permission even when no video frames are used.
+/// Uses Apple's native Core Audio Process Tap (`AudioHardwareCreateProcessTap`),
+/// which captures system audio output directly without requiring Screen Recording permissions
+/// or third-party virtual audio drivers.
 public final class AudioReactiveEngine: NSObject, ObservableObject {
     public static let shared = AudioReactiveEngine()
 
@@ -141,7 +144,11 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
     private var storedSensitivity: Float = 1.0
     private var storedSmoothing: Float = 0.35
 
-    private var stream: SCStream?
+    // Core Audio Tap state
+    private var tapID: AudioObjectID = 0
+    private var aggregateDeviceID: AudioObjectID = 0
+    private var procID: AudioDeviceIOProcID?
+
     private let sampleQueue = DispatchQueue(label: "com.singlesense.audio.samples", qos: .userInitiated)
 
     // MARK: FFT state
@@ -179,6 +186,8 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
     /// Buffers analysed frames between the analyser and the 60 Hz consumer.
     private var frameQueue = AnalysisFrameQueue()
 
+    private var wantsCapture = false
+
     private override init() {
         super.init()
     }
@@ -187,62 +196,119 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
 
     /// Starts or stops capture to match `active`. Safe to call repeatedly.
     public func setActive(_ active: Bool) {
+        wantsCapture = active
         if active {
             guard !status.isActive else { return }
             start()
         } else {
-            guard status.isActive else { return }
+            guard status.isActive else {
+                status = .idle
+                return
+            }
             stop()
         }
     }
 
-    private func start() {
-        status = .starting
-        Task { [weak self] in
-            guard let self = self else { return }
-            do {
-                // Throws when Screen Recording has not been granted, which is
-                // also what triggers the system prompt the first time.
-                let content = try await SCShareableContent.excludingDesktopWindows(
-                    false,
-                    onScreenWindowsOnly: false
-                )
-                guard let display = content.displays.first else {
-                    await self.setStatus(.failed("No display available to attach the audio tap to."))
-                    return
-                }
+    public func requestPermission() {
+        start()
+    }
 
-                let filter = SCContentFilter(
-                    display: display,
-                    excludingApplications: [],
-                    exceptingWindows: []
-                )
-
-                let config = SCStreamConfiguration()
-                config.capturesAudio = true
-                config.excludesCurrentProcessAudio = true
-                config.sampleRate = Int(Self.sampleRate)
-                config.channelCount = 2
-                // Video frames are not used; keep them as cheap as possible.
-                config.width = 2
-                config.height = 2
-                config.minimumFrameInterval = CMTime(value: 1, timescale: 1)
-                config.queueDepth = 5
-
-                let stream = SCStream(filter: filter, configuration: config, delegate: self)
-                try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: self.sampleQueue)
-                try await stream.startCapture()
-
-                await self.adopt(stream: stream)
-            } catch {
-                await self.setStatus(Self.classify(error))
-            }
+    public func openPrivacySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+            NSWorkspace.shared.open(url)
         }
     }
 
+    public func relaunchApp() {
+        PermissionMonitor.shared.relaunch()
+    }
+
+    private func start() {
+        guard aggregateDeviceID == 0 else { return }
+        guard #available(macOS 14.2, *) else {
+            status = .failed("System Audio Recording requires macOS 14.2 or later")
+            return
+        }
+        status = .starting
+
+        let tapDesc = CATapDescription(stereoGlobalTapButExcludeProcesses: [])
+        var newTapID: AudioObjectID = 0
+        let tapStatus = AudioHardwareCreateProcessTap(tapDesc, &newTapID)
+        guard tapStatus == noErr else {
+            if tapStatus == 1852797029 /* 'nope' */ || tapStatus == -50 {
+                status = .permissionRequired
+            } else {
+                status = .failed("Failed to create audio tap (code \(tapStatus))")
+            }
+            return
+        }
+
+        let tapConfig: [String: Any] = [
+            kAudioSubTapUIDKey as String: tapDesc.uuid.uuidString,
+            kAudioSubTapDriftCompensationKey as String: true
+        ]
+
+        let uid = UUID().uuidString
+        let desc: [String: Any] = [
+            kAudioAggregateDeviceNameKey as String: "SingleSenseAudioTap",
+            kAudioAggregateDeviceUIDKey as String: uid,
+            kAudioAggregateDeviceTapListKey as String: [tapConfig],
+            kAudioAggregateDeviceIsPrivateKey as String: true
+        ]
+
+        var newDeviceID: AudioObjectID = 0
+        let aggStatus = AudioHardwareCreateAggregateDevice(desc as CFDictionary, &newDeviceID)
+        guard aggStatus == noErr else {
+            AudioHardwareDestroyProcessTap(newTapID)
+            status = .failed("Failed to create Aggregate Device (code \(aggStatus))")
+            return
+        }
+
+        var newProcID: AudioDeviceIOProcID?
+        let procStatus = AudioDeviceCreateIOProcIDWithBlock(&newProcID, newDeviceID, nil) { [weak self] inNow, inInputData, inInputTime, outOutputData, inOutputTime in
+            self?.handleAudioInput(inInputData: inInputData, inInputTime: inInputTime)
+        }
+
+        guard procStatus == noErr, let validProcID = newProcID else {
+            AudioHardwareDestroyAggregateDevice(newDeviceID)
+            AudioHardwareDestroyProcessTap(newTapID)
+            status = .failed("Failed to create audio callback (code \(procStatus))")
+            return
+        }
+
+        let startStatus = AudioDeviceStart(newDeviceID, validProcID)
+        guard startStatus == noErr else {
+            AudioDeviceDestroyIOProcID(newDeviceID, validProcID)
+            AudioHardwareDestroyAggregateDevice(newDeviceID)
+            AudioHardwareDestroyProcessTap(newTapID)
+            if startStatus == 1852797029 /* 'nope' */ {
+                status = .permissionRequired
+            } else {
+                status = .failed("Audio tap rejected (code \(startStatus))")
+            }
+            return
+        }
+
+        self.tapID = newTapID
+        self.aggregateDeviceID = newDeviceID
+        self.procID = validProcID
+        self.status = .running
+    }
+
     private func stop() {
-        let stream = self.stream
-        self.stream = nil
+        if let procID = self.procID, aggregateDeviceID != 0 {
+            AudioDeviceStop(aggregateDeviceID, procID)
+            AudioDeviceDestroyIOProcID(aggregateDeviceID, procID)
+            self.procID = nil
+        }
+        if aggregateDeviceID != 0 {
+            AudioHardwareDestroyAggregateDevice(aggregateDeviceID)
+            aggregateDeviceID = 0
+        }
+        if #available(macOS 14.2, *), tapID != 0 {
+            AudioHardwareDestroyProcessTap(tapID)
+            tapID = 0
+        }
         status = .idle
 
         lock.lock()
@@ -250,77 +316,66 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         lock.unlock()
         displayLevels = .silent
 
-        // These are only ever touched on the sample queue.
         sampleQueue.async { [weak self] in
             guard let self = self else { return }
             self.envelope = .silent
             self.normalizer.reset()
             self.bassAverage = 0
+            self.lastBeatTime = 0
             self.pendingSamples.removeAll(keepingCapacity: true)
             self.hasPendingTimeline = false
         }
-
-        guard let stream = stream else { return }
-        Task {
-            try? await stream.stopCapture()
-        }
-    }
-
-    /// Takes ownership of a stream that finished starting up.
-    @MainActor
-    private func adopt(stream: SCStream) {
-        // A stop() issued while startup was in flight wins; tear the new
-        // stream straight back down instead of leaving it running.
-        guard status == .starting else {
-            Task { try? await stream.stopCapture() }
-            return
-        }
-        self.stream = stream
-        status = .running
-    }
-
-    @MainActor
-    private func setStatus(_ newStatus: AudioCaptureStatus) {
-        status = newStatus
-    }
-
-    private static func classify(_ error: Error) -> AudioCaptureStatus {
-        let nsError = error as NSError
-        // SCStreamErrorDomain -3801 is "user declined"; TCC also surfaces as
-        // a generic failure before the prompt has ever been answered.
-        if nsError.domain == SCStreamError.errorDomain,
-           nsError.code == SCStreamError.userDeclined.rawValue {
-            return .permissionRequired
-        }
-        return .failed(nsError.localizedDescription)
     }
 
     // MARK: - Analysis
 
-    fileprivate func process(sampleBuffer: CMSampleBuffer) {
-        guard sampleBuffer.isValid, sampleBuffer.numSamples > 0 else { return }
+    private func handleAudioInput(inInputData: UnsafePointer<AudioBufferList>, inInputTime: UnsafePointer<AudioTimeStamp>) {
+        let bufferList = inInputData.pointee
+        guard bufferList.mNumberBuffers > 0 else { return }
+        let buffer = bufferList.mBuffers
+        guard let raw = buffer.mData, buffer.mNumberChannels > 0 else { return }
 
-        let presentationTime = sampleBuffer.presentationTimeStamp.seconds
-        var mono: [Float] = []
-        try? sampleBuffer.withAudioBufferList { bufferList, _ in
-            let frameCount = Int(sampleBuffer.numSamples)
-            let channels = bufferList.count
-            guard frameCount > 0, channels > 0 else { return }
+        let channels = Int(buffer.mNumberChannels)
+        let totalSamples = Int(buffer.mDataByteSize) / MemoryLayout<Float>.size
+        let frameCount = totalSamples / channels
+        guard frameCount > 0 else { return }
 
-            mono = [Float](repeating: 0, count: frameCount)
-            // ScreenCaptureKit hands back deinterleaved 32-bit float, one
-            // buffer per channel; average them down to mono.
-            for buffer in bufferList {
-                guard let raw = buffer.mData else { continue }
-                let available = Int(buffer.mDataByteSize) / MemoryLayout<Float>.size
-                let usable = min(available, frameCount)
-                let samples = raw.bindMemory(to: Float.self, capacity: usable)
-                vDSP_vadd(mono, 1, samples, 1, &mono, 1, vDSP_Length(usable))
+        let ptr = raw.assumingMemoryBound(to: Float.self)
+        var mono = [Float](repeating: 0, count: frameCount)
+
+        if channels == 1 {
+            mono.withUnsafeMutableBufferPointer { dest in
+                _ = dest.baseAddress?.initialize(from: ptr, count: frameCount)
             }
-            var scale = 1 / Float(channels)
-            vDSP_vsmul(mono, 1, &scale, &mono, 1, vDSP_Length(frameCount))
+        } else if channels == 2 {
+            for i in 0..<frameCount {
+                mono[i] = (ptr[i * 2] + ptr[i * 2 + 1]) * 0.5
+            }
+        } else {
+            let scale = 1.0 / Float(channels)
+            for i in 0..<frameCount {
+                var sum: Float = 0
+                for c in 0..<channels {
+                    sum += ptr[i * channels + c]
+                }
+                mono[i] = sum * scale
+            }
         }
 
+        let presentationTime: TimeInterval
+        if inInputTime.pointee.mFlags.contains(.hostTimeValid) {
+            let hostTime = inInputTime.pointee.mHostTime
+            presentationTime = Double(hostTime) / 1_000_000_000.0
+        } else {
+            presentationTime = CACurrentMediaTime()
+        }
+
+        sampleQueue.async { [weak self] in
+            self?.process(mono: mono, presentationTime: presentationTime)
+        }
+    }
+
+    private func process(mono: [Float], presentationTime: TimeInterval) {
         guard !mono.isEmpty, presentationTime.isFinite else { return }
 
         // Anchor the accumulator to the audio clock, and resynchronise on a
@@ -340,8 +395,6 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
 
         while pendingSamples.count >= frameSize {
             let frame = Array(pendingSamples[0..<frameSize])
-            // The window is "heard" at its end, so that is the instant this
-            // measurement describes.
             let frameTime = pendingStartTime + Double(frameSize) / Double(Self.sampleRate)
             analyse(frame: frame)
             produced.append(AnalysisFrame(time: frameTime, levels: envelope))
@@ -383,54 +436,69 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
 
         var real = [Float](repeating: 0, count: half)
         var imaginary = [Float](repeating: 0, count: half)
-        var magnitudes = [Float](repeating: 0, count: half)
-
-        real.withUnsafeMutableBufferPointer { realPtr in
-            imaginary.withUnsafeMutableBufferPointer { imagPtr in
-                var split = DSPSplitComplex(realp: realPtr.baseAddress!, imagp: imagPtr.baseAddress!)
-
-                // Pack the real signal into the split-complex layout the
-                // real-to-complex FFT expects.
-                windowed.withUnsafeBufferPointer { input in
-                    input.baseAddress!.withMemoryRebound(to: DSPComplex.self, capacity: half) { typed in
-                        vDSP_ctoz(typed, 2, &split, 1, vDSP_Length(half))
+        real.withUnsafeMutableBufferPointer { r in
+            imaginary.withUnsafeMutableBufferPointer { i in
+                var split = DSPSplitComplex(realp: r.baseAddress!, imagp: i.baseAddress!)
+                windowed.withUnsafeBufferPointer { w in
+                    w.baseAddress!.withMemoryRebound(to: DSPComplex.self, capacity: half) { c in
+                        vDSP_ctoz(c, 2, &split, 1, vDSP_Length(half))
                     }
                 }
-
                 fft?.forward(input: split, output: &split)
+            }
+        }
+
+        var magnitudes = [Float](repeating: 0, count: half)
+        real.withUnsafeBufferPointer { r in
+            imaginary.withUnsafeBufferPointer { i in
+                var split = DSPSplitComplex(realp: UnsafeMutablePointer(mutating: r.baseAddress!), imagp: UnsafeMutablePointer(mutating: i.baseAddress!))
                 vDSP_zvmags(&split, 1, &magnitudes, 1, vDSP_Length(half))
             }
         }
 
+        var scale = 1.0 / Float(n)
+        vDSP_vsmul(magnitudes, 1, &scale, &magnitudes, 1, vDSP_Length(half))
+
         let binWidth = Self.sampleRate / Float(n)
-        func energy(from lowHz: Float, to highHz: Float) -> Float {
-            let first = max(1, Int(lowHz / binWidth))
-            let last = min(half - 1, Int(highHz / binWidth))
-            guard last >= first else { return 0 }
+
+        func bandEnergy(from lowHz: Float, to highHz: Float) -> Float {
+            let start = max(1, Int(lowHz / binWidth))
+            let end = min(half - 1, Int(highHz / binWidth))
+            guard start < end else { return 0 }
             var sum: Float = 0
-            for i in first...last { sum += magnitudes[i] }
-            // Magnitudes are squared; RMS keeps the scale perceptually sane.
-            return sqrt(sum / Float(last - first + 1))
+            vDSP_sve(Array(magnitudes[start...end]), 1, &sum, vDSP_Length(end - start + 1))
+            return sqrtf(sum / Float(end - start + 1))
         }
+
+        let rawBass = bandEnergy(from: 20, to: 250)
+        let rawMid = bandEnergy(from: 250, to: 4000)
+        let rawTreble = bandEnergy(from: 4000, to: 16000)
 
         lock.lock()
         let gain = storedSensitivity
-        let damping = storedSmoothing
         lock.unlock()
 
-        let target = normalizer.normalize(
-            bass: energy(from: 20, to: 250),
-            mid: energy(from: 250, to: 2_000),
-            treble: energy(from: 2_000, to: 8_000),
+        let normalized = normalizer.normalize(
+            bass: rawBass,
+            mid: rawMid,
+            treble: rawTreble,
             gain: gain
         )
 
-        // Asymmetric envelope: snap up on transients, ease down afterwards.
-        let attack = 1 - (0.45 * damping)
-        let release = 0.30 - (0.22 * damping)
+        updateEnvelope(target: normalized)
+    }
+
+    private func updateEnvelope(target: AudioLevels) {
+        lock.lock()
+        let smooth = storedSmoothing
+        lock.unlock()
+
+        let attack: Float = 0.6
+        let decay = max(0.05, 0.4 * (1.0 - smooth))
+
         func follow(_ current: Float, _ next: Float) -> Float {
-            let rate = next > current ? attack : release
-            return current + (next - current) * rate
+            let coeff = next > current ? attack : decay
+            return current + (next - current) * coeff
         }
 
         envelope.bass = follow(envelope.bass, target.bass)
@@ -447,25 +515,6 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
             envelope.beat = 1
         } else {
             envelope.beat = max(0, envelope.beat - 0.08)
-        }
-    }
-}
-
-// MARK: - ScreenCaptureKit plumbing
-
-extension AudioReactiveEngine: SCStreamOutput {
-    public func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .audio else { return }
-        process(sampleBuffer: sampleBuffer)
-    }
-}
-
-extension AudioReactiveEngine: SCStreamDelegate {
-    public func stream(_ stream: SCStream, didStopWithError error: Error) {
-        Task { @MainActor [weak self] in
-            guard let self = self, self.stream === stream else { return }
-            self.stream = nil
-            self.status = Self.classify(error)
         }
     }
 }

@@ -25,6 +25,8 @@ public final class TrackpadService: ObservableObject {
     @Published public var naturalScrolling: Bool = true
     @Published public var tapToClick: Bool = true
 
+    /// Mirrored from PermissionMonitor, so a grant made in System Settings
+    /// takes effect without relaunching or revisiting this screen.
     @Published public private(set) var hasPermission: Bool = AXIsProcessTrusted()
     /// Mirrors the live contact state for the UI.
     @Published public private(set) var contactCount: Int = 0
@@ -36,26 +38,27 @@ public final class TrackpadService: ObservableObject {
     private var recognizer = TrackpadGestureRecognizer()
 
     private var syntheticButtonDown = false
+    private var cancellables = Set<AnyCancellable>()
 
-    private init() {}
+    private init() {
+        PermissionMonitor.shared.$hasAccessibility
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] granted in
+                guard let self = self, self.hasPermission != granted else { return }
+                self.hasPermission = granted
+                // A revoked permission leaves any held button stuck down.
+                if !granted { self.reset() }
+            }
+            .store(in: &cancellables)
+    }
 
-    /// Re-checks the Accessibility permission, prompting when asked to.
-    @discardableResult
-    public func refreshPermission(prompt: Bool = false) -> Bool {
-        let granted: Bool
-        if prompt {
-            let key = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
-            granted = AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
-        } else {
-            granted = AXIsProcessTrusted()
-        }
-        DispatchQueue.main.async { self.hasPermission = granted }
-        return granted
+    /// Shows the system prompt. The result arrives through PermissionMonitor.
+    public func requestPermission() {
+        PermissionMonitor.shared.requestAccessibility()
     }
 
     public func openPrivacySettings() {
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") else { return }
-        NSWorkspace.shared.open(url)
+        PermissionMonitor.shared.openAccessibilitySettings()
     }
 
     private func reset() {

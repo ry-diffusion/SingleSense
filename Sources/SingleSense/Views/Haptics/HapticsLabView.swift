@@ -22,7 +22,7 @@ public struct HapticsLabView: View {
                     VStack(spacing: 12) {
                         HStack {
                             Label("Haptics & Motor Lab", systemImage: "waveform.path.ecg")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.headline)
                             Spacer()
                             if manager.leftRumbleIntensity > 0 || manager.rightRumbleIntensity > 0 {
                                 Button("Stop Vibration") {
@@ -62,7 +62,7 @@ public struct HapticsLabView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Text("Dual Rumble Motors")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.headline.weight(.bold))
                         Spacer()
                         Toggle("Sync Motors", isOn: $syncMotors)
                             .toggleStyle(SwitchToggleStyle())
@@ -72,10 +72,10 @@ public struct HapticsLabView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Label("Left Motor (Heavy / Low Frequency)", systemImage: "speaker.wave.3.fill")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.callout.weight(.medium))
                             Spacer()
                             Text("\(Int(manager.leftRumbleIntensity * 100))%  (\(UInt8(manager.leftRumbleIntensity * 255)))")
-                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .font(.callout.monospaced().weight(.bold))
                         }
                         Slider(
                             value: Binding(
@@ -98,10 +98,10 @@ public struct HapticsLabView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Label("Right Motor (Light / High Frequency)", systemImage: "speaker.wave.2.fill")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.callout.weight(.medium))
                             Spacer()
                             Text("\(Int(manager.rightRumbleIntensity * 100))%  (\(UInt8(manager.rightRumbleIntensity * 255)))")
-                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .font(.callout.monospaced().weight(.bold))
                         }
                         Slider(
                             value: Binding(
@@ -125,7 +125,7 @@ public struct HapticsLabView: View {
                 // CoreHaptics Sensory Patterns
                 VStack(alignment: .leading, spacing: 14) {
                     Text("CoreHaptics Sensory Presets")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.headline.weight(.bold))
                     
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
                         hapticButton(name: "Crisp Click", icon: "hand.tap.fill", pattern: "click")
@@ -148,10 +148,10 @@ public struct HapticsLabView: View {
         }) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.system(size: 14))
+                    .font(.body)
                     .foregroundColor(.accentColor)
                 Text(name)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.callout.weight(.semibold))
                     .foregroundColor(.primary)
                 Spacer(minLength: 0)
             }

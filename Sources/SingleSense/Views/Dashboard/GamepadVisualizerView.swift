@@ -6,6 +6,30 @@ public struct GamepadVisualizerView: View {
     public init(state: ControllerState) {
         self.state = state
     }
+
+    /// Read out in place of the diagram, which is dozens of unlabelled shapes
+    /// that would be noise one at a time.
+    private var spokenSummary: String {
+        var parts: [String] = []
+
+        let pressed = [
+            ("Cross", state.buttonCross), ("Circle", state.buttonCircle),
+            ("Square", state.buttonSquare), ("Triangle", state.buttonTriangle),
+            ("L1", state.buttonL1), ("R1", state.buttonR1),
+            ("L3", state.buttonL3), ("R3", state.buttonR3),
+            ("Up", state.dpadUp), ("Down", state.dpadDown),
+            ("Left", state.dpadLeft), ("Right", state.dpadRight),
+            ("Share", state.buttonShare), ("Options", state.buttonOptions),
+            ("PS", state.buttonPS), ("Touchpad", state.buttonTouchpad),
+            ("Mute", state.buttonMute),
+        ].filter(\.1).map(\.0)
+
+        parts.append(pressed.isEmpty ? "No buttons pressed" : "Pressed: " + pressed.joined(separator: ", "))
+        parts.append("L2 \(Int(state.triggerL2 * 100)) percent")
+        parts.append("R2 \(Int(state.triggerR2 * 100)) percent")
+        if state.touch1Active { parts.append("Touchpad in use") }
+        return parts.joined(separator: ". ")
+    }
     
     public var body: some View {
         ZStack {
@@ -25,7 +49,7 @@ public struct GamepadVisualizerView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 8) {
                             Text("L2")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.subheadline.monospaced().weight(.bold))
                                 .foregroundColor(state.buttonL2 ? .blue : .secondary)
                             
                             // L2 Gauge
@@ -40,14 +64,14 @@ public struct GamepadVisualizerView: View {
                             .frame(width: 80, height: 8)
                             
                             Text("\(Int(state.triggerL2 * 100))%")
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                .font(.caption.monospaced().weight(.medium))
                                 .foregroundColor(.secondary)
                                 .frame(width: 32, alignment: .trailing)
                         }
                         
                         // L1 Button
                         Text("L1")
-                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .font(.subheadline.monospaced().weight(.bold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 3)
                             .background(state.buttonL1 ? Color.blue : Color.secondary.opacity(0.2))
@@ -65,7 +89,7 @@ public struct GamepadVisualizerView: View {
                             .shadow(color: state.currentLightbarColor.color.opacity(0.8), radius: 8)
                         
                         Text("LIGHTBAR")
-                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .font(.caption2.monospaced().weight(.bold))
                             .foregroundColor(state.currentLightbarColor.color)
                     }
                     
@@ -75,7 +99,7 @@ public struct GamepadVisualizerView: View {
                     VStack(alignment: .trailing, spacing: 4) {
                         HStack(spacing: 8) {
                             Text("\(Int(state.triggerR2 * 100))%")
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                .font(.caption.monospaced().weight(.medium))
                                 .foregroundColor(.secondary)
                                 .frame(width: 32, alignment: .leading)
                             
@@ -91,13 +115,13 @@ public struct GamepadVisualizerView: View {
                             .frame(width: 80, height: 8)
                             
                             Text("R2")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.subheadline.monospaced().weight(.bold))
                                 .foregroundColor(state.buttonR2 ? .blue : .secondary)
                         }
                         
                         // R1 Button
                         Text("R1")
-                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .font(.subheadline.monospaced().weight(.bold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 3)
                             .background(state.buttonR1 ? Color.blue : Color.secondary.opacity(0.2))
@@ -167,7 +191,7 @@ public struct GamepadVisualizerView: View {
                             }
                             
                             Text("TOUCHPAD")
-                                .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                                .font(.caption2.monospaced().weight(.semibold))
                                 .foregroundColor(.secondary.opacity(0.7))
                         }
                         .frame(width: 140, height: 75)
@@ -183,7 +207,7 @@ public struct GamepadVisualizerView: View {
                                     .fill(state.buttonPS ? Color.blue : Color.secondary.opacity(0.2))
                                     .frame(width: 26, height: 26)
                                 Image(systemName: "playstation.logo")
-                                    .font(.system(size: 14))
+                                    .font(.body)
                                     .foregroundColor(state.buttonPS ? .white : .primary)
                             }
                             
@@ -197,7 +221,7 @@ public struct GamepadVisualizerView: View {
                                 .fill(state.buttonMute ? Color.orange : Color.secondary.opacity(0.3))
                                 .frame(width: 6, height: 6)
                             Text("MIC")
-                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .font(.caption2.monospaced().weight(.bold))
                                 .foregroundColor(state.buttonMute ? .orange : .secondary)
                         }
                         .padding(.horizontal, 6)
@@ -245,21 +269,21 @@ public struct GamepadVisualizerView: View {
                 if state.isEdge {
                     HStack(spacing: 24) {
                         Text("L4: \(state.paddleL4 ? "ON" : "OFF")")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .font(.caption.monospaced().weight(.bold))
                             .foregroundColor(state.paddleL4 ? .blue : .secondary)
                         Text("L5: \(state.paddleL5 ? "ON" : "OFF")")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .font(.caption.monospaced().weight(.bold))
                             .foregroundColor(state.paddleL5 ? .blue : .secondary)
                         Spacer()
                         Text("EDGE PADDLES")
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .font(.caption2.monospaced().weight(.bold))
                             .foregroundColor(.secondary)
                         Spacer()
                         Text("R5: \(state.paddleR5 ? "ON" : "OFF")")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .font(.caption.monospaced().weight(.bold))
                             .foregroundColor(state.paddleR5 ? .blue : .secondary)
                         Text("R4: \(state.paddleR4 ? "ON" : "OFF")")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .font(.caption.monospaced().weight(.bold))
                             .foregroundColor(state.paddleR4 ? .blue : .secondary)
                     }
                     .padding(.horizontal, 28)
@@ -269,6 +293,9 @@ public struct GamepadVisualizerView: View {
             .padding(.vertical, 8)
         }
         .frame(height: 250)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Controller input")
+        .accessibilityValue(spokenSummary)
     }
     
     // MARK: - Subviews
@@ -278,7 +305,7 @@ public struct GamepadVisualizerView: View {
                 .fill(isActive ? Color.blue : Color.secondary.opacity(0.2))
                 .frame(width: 22, height: 22)
             Image(systemName: symbol)
-                .font(.system(size: 10, weight: .bold))
+                .font(.caption.weight(.bold))
                 .foregroundColor(isActive ? .white : .primary)
         }
     }
@@ -290,14 +317,14 @@ public struct GamepadVisualizerView: View {
                 .frame(width: 22, height: 22)
                 .shadow(color: isActive ? color.opacity(0.8) : Color.clear, radius: 4)
             Text(label)
-                .font(.system(size: 11, weight: .bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundColor(isActive ? .white : color)
         }
     }
     
     private func buttonIndicator(label: String, isActive: Bool) -> some View {
         Text(label)
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.caption2.monospaced().weight(.bold))
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
             .background(isActive ? Color.blue : Color.secondary.opacity(0.15))
@@ -323,7 +350,7 @@ public struct GamepadVisualizerView: View {
                 .frame(width: 24, height: 24)
                 .overlay(
                     Text(name)
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .font(.caption2.monospaced().weight(.bold))
                         .foregroundColor(isPressed ? .white : .primary)
                 )
                 .offset(
