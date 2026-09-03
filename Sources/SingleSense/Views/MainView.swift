@@ -31,6 +31,8 @@ public struct MainView: View {
     // fires for changes *inside* it. Observing it directly is what keeps live
     // input (trigger pressure, battery, telemetry) flowing into the view.
     @ObservedObject var controllerState = DualSenseManager.shared.controllerState
+    @ObservedObject var rainbowEngine = RainbowEngine.shared
+    @ObservedObject var audioEngine = AudioReactiveEngine.shared
     
     public init() {}
     
@@ -88,7 +90,65 @@ public struct MainView: View {
                 }
             }
             .navigationTitle(selectedItem?.rawValue ?? "SingleSense")
+            .background(musicSyncBackground)
         }
         .frame(minWidth: 850, minHeight: 620)
+        .background(musicSyncBackground)
+    }
+
+    @ViewBuilder
+    private var musicSyncBackground: some View {
+        if manager.lightbarConfig.mode == .musicSync {
+            let primary = rainbowEngine.currentDisplayColor.color
+            let beat = Double(audioEngine.displayLevels.beat)
+            let overall = Double(audioEngine.displayLevels.overall)
+            let bass = Double(audioEngine.displayLevels.bass)
+            let treble = Double(audioEngine.displayLevels.treble)
+
+            ZStack {
+                Color(NSColor.windowBackgroundColor)
+
+                // Top-leading glow: follows the lightbar's current live color and pulses on beat
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        primary.opacity(0.20 + beat * 0.15),
+                        primary.opacity(0.06),
+                        Color.clear
+                    ]),
+                    center: .topLeading,
+                    startRadius: 50,
+                    endRadius: 600
+                )
+
+                // Bottom-trailing glow: harmonic accent driven by treble and overall music loudness
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        Color(
+                            red: max(0.05, 0.15 + treble * 0.5),
+                            green: max(0.1, 0.2 + bass * 0.4),
+                            blue: max(0.3, 0.8 + treble * 0.2)
+                        ).opacity(0.18 + overall * 0.12),
+                        Color.clear
+                    ]),
+                    center: .bottomTrailing,
+                    startRadius: 80,
+                    endRadius: 650
+                )
+
+                // Linear wash connecting both sides
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        primary.opacity(0.08 + beat * 0.08),
+                        Color.clear,
+                        primary.opacity(0.04)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .animation(.easeInOut(duration: 0.15), value: rainbowEngine.currentDisplayColor)
+            .animation(.spring(response: 0.2, dampingFraction: 0.75), value: audioEngine.displayLevels.beat)
+            .ignoresSafeArea()
+        }
     }
 }
