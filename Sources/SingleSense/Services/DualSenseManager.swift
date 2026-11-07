@@ -9,6 +9,7 @@ public final class DualSenseManager: ObservableObject {
     @Published public var controllerState = ControllerState()
     @Published public var lightbarConfig = LightbarConfiguration()
     @Published public var musicSyncConfig = MusicSyncConfiguration()
+    @Published public var speakerConfig = SpeakerConfiguration()
     @Published public var leftTriggerConfig = SingleTriggerConfig()
     @Published public var rightTriggerConfig = SingleTriggerConfig()
     @Published public var triggersLinked: Bool = false
@@ -32,6 +33,11 @@ public final class DualSenseManager: ObservableObject {
     /// The colour currently being driven, readable without waiting for the
     /// published copy to land. Hardware must never read a stale value.
     private var currentColor = RGBColor(red: 0.0, green: 0.4, blue: 1.0)
+
+    /// Set once the speaker has been switched on this session. From then on
+    /// every report carries an explicit route, so switching it off actually
+    /// hands the sound back to the jack instead of leaving the speaker live.
+    private var speakerRouteTouched = false
 
     private var dynoLeftTrigger = SingleTriggerConfig(mode: .off)
     private var dynoRightTrigger = SingleTriggerConfig(mode: .off)
@@ -64,6 +70,7 @@ public final class DualSenseManager: ObservableObject {
         let saved = SettingsStore.shared.load()
         lightbarConfig = saved.lightbar
         musicSyncConfig = saved.musicSync
+        speakerConfig = saved.speaker
         leftTriggerConfig = saved.leftTrigger.sanitized()
         rightTriggerConfig = saved.rightTrigger.sanitized()
         triggersLinked = saved.triggersLinked
@@ -95,6 +102,7 @@ public final class DualSenseManager: ObservableObject {
         let manager = Publishers.MergeMany(
             $lightbarConfig.map { _ in () }.eraseToAnyPublisher(),
             $musicSyncConfig.map { _ in () }.eraseToAnyPublisher(),
+            $speakerConfig.map { _ in () }.eraseToAnyPublisher(),
             $leftTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
             $rightTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
             $triggersLinked.map { _ in () }.eraseToAnyPublisher(),
@@ -130,6 +138,7 @@ public final class DualSenseManager: ObservableObject {
         var settings = SessionSettings()
         settings.lightbar = lightbarConfig
         settings.musicSync = musicSyncConfig
+        settings.speaker = speakerConfig
         settings.leftTrigger = leftTriggerConfig
         settings.rightTrigger = rightTriggerConfig
         settings.triggersLinked = triggersLinked
@@ -159,6 +168,7 @@ public final class DualSenseManager: ObservableObject {
         // Restored state only reached memory; this puts it on the hardware and
         // starts the audio tap if Music Sync was left switched on.
         applyMusicSyncConfiguration(force: true)
+        applySpeakerConfiguration(force: true)
         applyTriggerConfiguration(force: true)
     }
     
@@ -167,6 +177,7 @@ public final class DualSenseManager: ObservableObject {
         HIDDriver.shared.stop()
         RainbowEngine.shared.stop()
         AudioReactiveEngine.shared.setActive(false)
+        ControllerSpeakerEngine.shared.setActive(false)
         GCController.stopWirelessControllerDiscovery()
     }
     
@@ -477,6 +488,13 @@ public final class DualSenseManager: ObservableObject {
         controllerState.accelY = snapshot.accelY
         controllerState.accelZ = snapshot.accelZ
 
+        if controllerState.headphonesConnected != snapshot.headphonesConnected {
+            controllerState.headphonesConnected = snapshot.headphonesConnected
+            // Plugging in moves the sound from the speaker to the jack, and
+            // back to stereo.
+            if speakerConfig.isEnabled { applySpeakerConfiguration(force: true) }
+        }
+
         controllerState.buttonMute = snapshot.micMuteButton
         controllerState.buttonTouchpad = snapshot.touchpadButton
 
@@ -626,6 +644,7 @@ public final class DualSenseManager: ObservableObject {
                 rightMotor: DSScale.byte(right),
                 leftTrigger: isTriggerDynoTestActive ? dynoLeftTrigger : leftTriggerConfig,
                 rightTrigger: isTriggerDynoTestActive ? dynoRightTrigger : rightTriggerConfig,
+                audioRoute: currentAudioRoute(),
                 forceSend: force
             )
             publishOnNextRunLoopTurn { [weak self] in
@@ -675,6 +694,26 @@ public final class DualSenseManager: ObservableObject {
         audio.setActive(musicSyncConfig.needsAudioCapture)
 
         applyLightbarConfiguration(force: force)
+    }
+
+    /// Starts or stops playback through the controller and re-sends the
+    /// routing that goes with it.
+    public func applySpeakerConfiguration(force: Bool = false) {
+        let speaker = ControllerSpeakerEngine.shared
+        if speakerConfig.isEnabled { speakerRouteTouched = true }
+        speaker.setGain(speakerConfig.gain)
+        speaker.setStereo(controllerState.headphonesConnected)
+        speaker.setActive(speakerConfig.isEnabled)
+        updateHardwareLightbar(color: currentColor, force: force)
+    }
+
+    /// The audio block for the next report, or nil to leave the controller's
+    /// own routing alone — which is the case until the speaker is first used,
+    /// and always over Bluetooth, where there is no audio stream to route.
+    private func currentAudioRoute() -> DSAudioRoute? {
+        guard speakerRouteTouched, controllerState.connectionType == .usb else { return nil }
+        guard speakerConfig.isEnabled, !controllerState.headphonesConnected else { return .headphones }
+        return .speaker
     }
 
     public func applyLightbarConfiguration(force: Bool = false) {

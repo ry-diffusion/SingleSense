@@ -86,6 +86,11 @@ public enum DualSenseProtocol {
     /// lands immediately instead of ramping.
     public static let playerLEDInstant: UInt8 = 1 << 5
 
+    /// `DS_OUTPUT_AUDIO_FLAGS_OUTPUT_PATH_SEL`, bits 4-5 of `audio_control`.
+    public static let audioOutputPathShift: UInt8 = 4
+    /// `DS_OUTPUT_AUDIO_FLAGS2_SP_PREAMP_GAIN`, bits 0-2 of `audio_control2`.
+    public static let speakerPreampGainMask: UInt8 = 0x07
+
     // MARK: - Input report bit masks
 
     public enum Buttons2 {
@@ -179,6 +184,57 @@ public struct DSOutputLayout {
     public var lightbarRed: Int { commonBase + 44 }
     public var lightbarGreen: Int { commonBase + 45 }
     public var lightbarBlue: Int { commonBase + 46 }
+}
+
+// MARK: - Audio routing
+
+/// Where the controller sends the two audio channels it receives over USB.
+///
+/// Values of the output path field as dualsensectl's `speaker` command names
+/// them. The speaker is mono and plays the right channel.
+public enum DSAudioOutputPath: UInt8 {
+    /// Stereo to the headphone jack, speaker off. The power-on default.
+    case headphones = 0
+    case monoHeadphones = 1
+    /// Left channel to the headphones, right channel to the speaker.
+    case headphonesAndSpeaker = 2
+    /// Right channel to the speaker, headphones off.
+    case speaker = 3
+}
+
+/// The audio block of the output report. When a report carries one, the
+/// audio control and speaker volume valid bits are set; when it carries none,
+/// the controller keeps whatever routing it had.
+///
+/// Headphone and microphone volume are deliberately never touched: setting
+/// their valid bits with a zero byte mutes them.
+public struct DSAudioRoute: Equatable {
+    public var path: DSAudioOutputPath
+    public var speakerVolume: UInt8
+    public var speakerPreampGain: UInt8
+
+    /// The level the Linux driver programs when it routes to the speaker.
+    /// The app scales the signal itself, so this stays fixed.
+    public static let speakerVolumeLevel: UInt8 = 0x64
+    public static let speakerPreampLevel: UInt8 = 2
+
+    public static let speaker = DSAudioRoute(
+        path: .speaker,
+        speakerVolume: speakerVolumeLevel,
+        speakerPreampGain: speakerPreampLevel
+    )
+
+    /// Back to the power-on routing: jack only, speaker silent.
+    public static let headphones = DSAudioRoute(path: .headphones, speakerVolume: 0, speakerPreampGain: 0)
+
+    func encode(into report: inout [UInt8], layout: DSOutputLayout) {
+        report[layout.validFlag0] |= DualSenseProtocol.ValidFlag0.speakerVolumeEnable
+            | DualSenseProtocol.ValidFlag0.audioControlEnable
+        report[layout.validFlag1] |= DualSenseProtocol.ValidFlag1.audioControl2Enable
+        report[layout.speakerVolume] = speakerVolume
+        report[layout.audioControl] = (path.rawValue & 0x03) << DualSenseProtocol.audioOutputPathShift
+        report[layout.audioControl2] = speakerPreampGain & DualSenseProtocol.speakerPreampGainMask
+    }
 }
 
 // MARK: - Input report layout

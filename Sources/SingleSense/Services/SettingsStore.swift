@@ -8,6 +8,7 @@ import Combine
 public struct SessionSettings: Codable, Equatable {
     public var lightbar = LightbarConfiguration()
     public var musicSync = MusicSyncConfiguration()
+    public var speaker = SpeakerConfiguration()
     public var leftTrigger = SingleTriggerConfig()
     public var rightTrigger = SingleTriggerConfig()
     public var triggersLinked = false
@@ -42,6 +43,7 @@ public struct SessionSettings: Codable, Equatable {
         // from the outside, leave the mode on one the bar can actually show
         // once the music stops.
         if lightbar.mode == .musicSync { lightbar.mode = .staticColor }
+        speaker = (try? container.decodeIfPresent(SpeakerConfiguration.self, forKey: .speaker)) ?? fallback.speaker
         leftTrigger = try container.decodeIfPresent(SingleTriggerConfig.self, forKey: .leftTrigger) ?? fallback.leftTrigger
         rightTrigger = try container.decodeIfPresent(SingleTriggerConfig.self, forKey: .rightTrigger) ?? fallback.rightTrigger
         triggersLinked = try container.decodeIfPresent(Bool.self, forKey: .triggersLinked) ?? fallback.triggersLinked

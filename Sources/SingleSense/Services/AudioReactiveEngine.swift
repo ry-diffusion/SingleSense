@@ -231,7 +231,10 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         }
         status = .starting
 
-        let tapDesc = CATapDescription(stereoGlobalTapButExcludeProcesses: [])
+        // Leave this process out: while the controller speaker is on, its
+        // playback is a second copy of the same mix.
+        let ownProcess = CoreAudioQuery.currentProcessObject().map { [$0] } ?? []
+        let tapDesc = CATapDescription(stereoGlobalTapButExcludeProcesses: ownProcess)
         var newTapID: AudioObjectID = 0
         let tapStatus = AudioHardwareCreateProcessTap(tapDesc, &newTapID)
         guard tapStatus == noErr else {

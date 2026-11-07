@@ -11,6 +11,8 @@ public struct DSInputSnapshot: Equatable {
     public var isCharging: Bool = false
     public var micMuted: Bool = false
     public var micMuteButton: Bool = false
+    /// Something is plugged into the 3.5 mm jack.
+    public var headphonesConnected: Bool = false
     public var touchpadButton: Bool = false
     public var touch1Active: Bool = false
     public var touch1X: Float = 0.5
@@ -44,6 +46,7 @@ public struct DSInputSnapshot: Equatable {
             || edgeFN1 != other.edgeFN1
             || edgeFN2 != other.edgeFN2
             || micMuted != other.micMuted
+            || headphonesConnected != other.headphonesConnected
             || isCharging != other.isCharging
             || batteryLevel != other.batteryLevel
     }
@@ -445,7 +448,8 @@ public final class HIDDriver {
         leftMotor: UInt8,
         rightMotor: UInt8,
         leftTrigger: SingleTriggerConfig,
-        rightTrigger: SingleTriggerConfig
+        rightTrigger: SingleTriggerConfig,
+        audioRoute: DSAudioRoute? = nil
     ) -> [UInt8] {
         var report = [UInt8](repeating: 0, count: layout.totalSize)
         report[0] = layout.reportID
@@ -457,7 +461,8 @@ public final class HIDDriver {
 
         // Enable exactly the subsystems being driven — and no more. Bits 5-7
         // of valid_flag0 would switch on the audio control block, whose volume
-        // bytes are zero here, muting the controller's speaker and mic.
+        // bytes are zero here, muting the controller's speaker and mic. Only
+        // an explicit `audioRoute` turns the speaker half of it on.
         //
         // The two trigger bits are not optional: without them the firmware
         // discards the effect blocks below however well-formed they are.
@@ -496,6 +501,8 @@ public final class HIDDriver {
         report[layout.lightbarRed] = lightbar.redByte
         report[layout.lightbarGreen] = lightbar.greenByte
         report[layout.lightbarBlue] = lightbar.blueByte
+
+        audioRoute?.encode(into: &report, layout: layout)
 
         return report
     }
@@ -637,6 +644,7 @@ public final class HIDDriver {
         rightMotor: UInt8,
         leftTrigger: SingleTriggerConfig,
         rightTrigger: SingleTriggerConfig,
+        audioRoute: DSAudioRoute? = nil,
         forceSend: Bool = false
     ) {
         let state = DSHardwareState(
@@ -648,7 +656,8 @@ public final class HIDDriver {
             rightMotor: rightMotor,
             leftTrigger: leftTrigger,
             rightTrigger: rightTrigger,
-            forceSend: forceSend
+            forceSend: forceSend,
+            audioRoute: audioRoute
         )
 
         lock.lock()
@@ -672,7 +681,8 @@ public final class HIDDriver {
             leftMotor: state.leftMotor,
             rightMotor: state.rightMotor,
             leftTrigger: state.leftTrigger,
-            rightTrigger: state.rightTrigger
+            rightTrigger: state.rightTrigger,
+            audioRoute: state.audioRoute
         )
 
         // Deduplicate before the sequence number and CRC go in, otherwise
@@ -782,6 +792,7 @@ public final class HIDDriver {
         let status0 = data[base + DSInputLayout.status]
         let status1 = data[base + DSInputLayout.status + 1]
         snapshot.micMuted = (status1 & DualSenseProtocol.Status1.micMute) != 0
+        snapshot.headphonesConnected = (status1 & DualSenseProtocol.Status1.headphoneDetect) != 0
 
         // status[0] packs capacity in the low nibble and charge state in the high
         // nibble, exactly as `dualsense_parse_report` decodes it.

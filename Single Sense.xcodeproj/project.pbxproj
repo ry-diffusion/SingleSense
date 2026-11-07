@@ -55,6 +55,10 @@
 		5E0000000000000000000061 /* SendDeduplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000060 /* SendDeduplicationTests.swift */; };
 		5E0000000000000000000063 /* SessionSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000062 /* SessionSettingsTests.swift */; };
 		5E0000000000000000000065 /* ValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0000000000000000000064 /* ValidationTests.swift */; };
+		5E00000000000000000000A1 /* SpeakerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A0 /* SpeakerConfiguration.swift */; };
+		5E00000000000000000000A3 /* ControllerSpeakerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A2 /* ControllerSpeakerEngine.swift */; };
+		5E00000000000000000000A5 /* SpeakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A4 /* SpeakerView.swift */; };
+		5E00000000000000000000A7 /* SpeakerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A6 /* SpeakerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,6 +123,10 @@
 		5E0000000000000000000069 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		5E000000000000000000006A /* Single Sense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Single Sense.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E000000000000000000006B /* Single SenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Single SenseTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E00000000000000000000A0 /* SpeakerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerConfiguration.swift; sourceTree = "<group>"; };
+		5E00000000000000000000A2 /* ControllerSpeakerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerSpeakerEngine.swift; sourceTree = "<group>"; };
+		5E00000000000000000000A4 /* SpeakerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerView.swift; sourceTree = "<group>"; };
+		5E00000000000000000000A6 /* SpeakerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +155,14 @@
 			path = MusicSync;
 			sourceTree = "<group>";
 		};
+		5E00000000000000000000A8 /* Speaker */ = {
+			isa = PBXGroup;
+			children = (
+				5E00000000000000000000A4 /* SpeakerView.swift */,
+			);
+			path = Speaker;
+			sourceTree = "<group>";
+		};
 		5E0000000000000000000005 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -165,6 +181,7 @@
 				5E000000000000000000000C /* Profile.swift */,
 				5E000000000000000000000E /* TriggerConfiguration.swift */,
 				270F4646304A32E80065BD5B /* MusicSyncConfiguration.swift */,
+				5E00000000000000000000A0 /* SpeakerConfiguration.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -175,6 +192,7 @@
 				5E0000000000000000000011 /* AnalysisFrameQueue.swift */,
 				5E0000000000000000000013 /* AudioReactiveEngine.swift */,
 				5E0000000000000000000015 /* Checksum.swift */,
+				5E00000000000000000000A2 /* ControllerSpeakerEngine.swift */,
 				5E0000000000000000000017 /* DualSenseManager.swift */,
 				5E0000000000000000000019 /* DualSenseProtocol.swift */,
 				5E000000000000000000001B /* HIDDriver.swift */,
@@ -272,6 +290,7 @@
 				5E000000000000000000004F /* Triggers */,
 				5E0000000000000000000050 /* MainView.swift */,
 				270F4648304A33F20065BD5B /* MusicSync */,
+				5E00000000000000000000A8 /* Speaker */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -298,6 +317,7 @@
 				5E000000000000000000005C /* OutputReportTests.swift */,
 				5E000000000000000000005E /* QueueTests.swift */,
 				5E0000000000000000000060 /* SendDeduplicationTests.swift */,
+				5E00000000000000000000A6 /* SpeakerTests.swift */,
 				5E0000000000000000000062 /* SessionSettingsTests.swift */,
 				5E0000000000000000000064 /* ValidationTests.swift */,
 			);
@@ -471,6 +491,9 @@
 				5E000000000000000000004C /* TriggerStudioView.swift in Sources */,
 				5E000000000000000000004E /* TriggerZoneGraphView.swift in Sources */,
 				5E0000000000000000000051 /* MainView.swift in Sources */,
+				5E00000000000000000000A1 /* SpeakerConfiguration.swift in Sources */,
+				5E00000000000000000000A3 /* ControllerSpeakerEngine.swift in Sources */,
+				5E00000000000000000000A5 /* SpeakerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -485,6 +508,7 @@
 				5E000000000000000000005D /* OutputReportTests.swift in Sources */,
 				5E000000000000000000005F /* QueueTests.swift in Sources */,
 				5E0000000000000000000061 /* SendDeduplicationTests.swift in Sources */,
+				5E00000000000000000000A7 /* SpeakerTests.swift in Sources */,
 				5E0000000000000000000063 /* SessionSettingsTests.swift in Sources */,
 				5E0000000000000000000065 /* ValidationTests.swift in Sources */,
 			);

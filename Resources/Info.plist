@@ -44,7 +44,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
 	<key>NSAudioCaptureUsageDescription</key>
-	<string>Single Sense reads the system audio output in memory to synchronize controller lighting and haptics with your media. Audio is analyzed in real time and never saved or transmitted.</string>
+	<string>Single Sense reads the system audio output in memory to synchronize controller lighting and haptics with your media, and to play it through the controller&apos;s speaker when you turn that on. Audio is processed in real time and never saved or transmitted.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Single Sense requires Bluetooth access to communicate with and configure PS5 DualSense controllers.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>

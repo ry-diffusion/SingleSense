@@ -9,6 +9,8 @@ public final class ControllerState: ObservableObject {
     @Published public var connectionType: ConnectionType = .unknown
     @Published public var batteryLevel: Float = 1.0 // 0.0 ... 1.0
     @Published public var isBatteryCharging: Bool = false
+    /// Something is plugged into the controller's 3.5 mm jack.
+    @Published public var headphonesConnected: Bool = false
     
     // Action Buttons
     @Published public var buttonCross: Bool = false
@@ -121,5 +123,6 @@ public final class ControllerState: ObservableObject {
         paddleR5 = false
         buttonFnL = false
         buttonFnR = false
+        headphonesConnected = false
     }
 }

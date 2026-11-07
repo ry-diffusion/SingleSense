@@ -6,6 +6,7 @@ public enum NavigationItem: String, CaseIterable, Identifiable {
     case musicSync = "Music Sync"
     case triggers = "Adaptive Triggers"
     case haptics = "Haptics & Vibration"
+    case speaker = "Controller Speaker"
     case motion = "Motion & Gyro"
     case trackpad = "Trackpad"
     case profiles = "Profiles"
@@ -19,6 +20,7 @@ public enum NavigationItem: String, CaseIterable, Identifiable {
         case .musicSync: return "waveform"
         case .triggers: return "scope"
         case .haptics: return "waveform.path.ecg"
+        case .speaker: return "hifispeaker.fill"
         case .motion: return "gyroscope"
         case .trackpad: return "cursorarrow.rays"
         case .profiles: return "square.stack.3d.up.fill"
@@ -85,6 +87,8 @@ public struct MainView: View {
                     TriggerStudioView()
                 case .haptics:
                     HapticsLabView()
+                case .speaker:
+                    SpeakerView()
                 case .motion:
                     MotionSensorView()
                 case .trackpad:

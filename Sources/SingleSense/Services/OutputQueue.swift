@@ -11,6 +11,8 @@ struct DSHardwareState {
     var leftTrigger: SingleTriggerConfig
     var rightTrigger: SingleTriggerConfig
     var forceSend: Bool
+    /// Speaker routing, or nil to leave the controller's audio block alone.
+    var audioRoute: DSAudioRoute? = nil
     /// How many times this state has already failed to reach the device.
     var attempts: Int = 0
 }

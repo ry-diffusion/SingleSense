@@ -43,6 +43,16 @@ Two automatic modes that earn their keep day to day:
 
 > The first time, macOS will ask for **System Audio Recording** permission. Single Sense uses Apple's native Core Audio Process Taps to listen to the system mix directly — no screen or video recording permission is needed.
 
+### 🔊 The controller as a speaker
+
+Switch on **Controller Speaker** and whatever your Mac is playing moves to the DualSense: its built-in speaker, or headphones plugged into its jack. The sound is moved, not copied — the Mac goes quiet while it's on and comes back the moment you switch it off.
+
+- **Speaker** gets a mono mix of both channels, so nothing panned hard left goes missing
+- **Headphones** in the controller's jack get full stereo; plug or unplug them and the sound follows
+- Its own volume slider, on top of the Mac's
+
+It needs a **USB cable**: over Bluetooth macOS doesn't see the controller as a sound device. It uses the same **System Audio Recording** permission as Music Sync.
+
 ### 🎯 Adaptive triggers
 
 The best part of the DualSense. Build whatever feel you want:
