@@ -134,6 +134,27 @@ final class SpeakerTests: XCTestCase {
         XCTAssertEqual(read(ring, frames: 1), [0, 0])
     }
 
+    /// With a subwoofer, the speaker's half of the crossover drops the bass
+    /// and keeps the rest.
+    func testCrossoverHighPassOnTheSpeaker() {
+        func response(_ hz: Float, crossover: Float?) -> Float {
+            let ring = SpeakerRingBuffer(capacity: 16_384, target: 1, ceiling: 16_384)
+            ring.setParameters(gain: 1, mono: true)
+            ring.setHighPass(crossover, sampleRate: 48_000)
+            let frames = 9_600
+            ring.write(frames: frames) { i in
+                let v = 0.5 * sinf(2 * .pi * hz * Float(i) / 48_000)
+                return (v, v)
+            }
+            let out = read(ring, frames: frames)
+            let settled = stride(from: frames, to: frames * 2, by: 2).map { out[$0] }
+            return (settled.reduce(0) { $0 + $1 * $1 } / Float(settled.count)).squareRoot()
+        }
+        let fullRange = response(50, crossover: nil)
+        XCTAssertLessThan(response(50, crossover: 150), fullRange * 0.05)
+        XCTAssertEqual(response(2_000, crossover: 150), response(2_000, crossover: nil), accuracy: 0.01)
+    }
+
     // MARK: - Device matching
 
     func testDeviceMatching() {

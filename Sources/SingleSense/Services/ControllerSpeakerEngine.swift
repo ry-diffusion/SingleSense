@@ -18,18 +18,22 @@ public enum SpeakerStatus: Equatable {
     public var isRunning: Bool { self == .running }
 }
 
-/// Moves the Mac's sound to the controller.
+/// Sends the Mac's sound to the controller: all of it to the speaker, the
+/// bass to the voice coils as a subwoofer, or both.
 ///
 /// Over USB the DualSense is an ordinary four-channel sound card: channels 1-2
 /// feed the headphone jack or the speaker, 3-4 the haptic actuators. Simply
 /// making it the default output would put only the right channel on the
 /// (mono) speaker, and would hand haptics whatever macOS chose to send there.
 ///
-/// So instead a process tap takes the whole system mix — muting it on the
-/// Mac while it is being read — and an output unit bound to the controller
-/// plays it back on channels 1-2 only, folded to mono for the speaker or left
-/// in stereo when something is plugged into the jack. The tap leaves this
-/// process out, otherwise it would capture, and mute, its own playback.
+/// So instead one process tap takes the whole system mix. For the speaker it
+/// mutes the Mac while it is being read and an output unit bound to the
+/// controller plays the mix on channels 1-2, folded to mono for the speaker or
+/// left in stereo when something is plugged into the jack. For the subwoofer
+/// the same capture feeds the voice-coil mixer, which keeps only the bass;
+/// with the speaker off the tap leaves the Mac playing, so the controller sits
+/// under the Mac's own speakers. The tap leaves this process out, otherwise it
+/// would capture, and mute, its own playback.
 public final class ControllerSpeakerEngine: ObservableObject {
     public static let shared = ControllerSpeakerEngine()
 
@@ -37,11 +41,16 @@ public final class ControllerSpeakerEngine: ObservableObject {
     @Published public private(set) var deviceName: String?
 
     private let ring = SpeakerRingBuffer()
-    private var wantsOutput = false
+    private var wantsSpeaker = false
+    private var wantsSubwoofer = false
     private var gain: Float = 0.64
     private var stereo = false
+    private var crossoverHz: Float?
 
-    private var outputDeviceID = AudioObjectID(kAudioObjectUnknown)
+    /// What the running tap was built for; a change means a rebuild.
+    private var running: (speaker: Bool, subwoofer: Bool)?
+    private var activeDeviceID = AudioObjectID(kAudioObjectUnknown)
+    private var tapSampleRate: Double = 48_000
     private var outputUnit: AudioUnit?
     private var tapID = AudioObjectID(kAudioObjectUnknown)
     private var aggregateDeviceID = AudioObjectID(kAudioObjectUnknown)
@@ -52,10 +61,11 @@ public final class ControllerSpeakerEngine: ObservableObject {
 
     // MARK: - Control (main thread)
 
-    /// Starts or stops playback to match `active`. Safe to call repeatedly.
-    public func setActive(_ active: Bool) {
-        wantsOutput = active
-        if active { watchDeviceList() }
+    /// Starts, rebuilds or stops the capture to match. Safe to call repeatedly.
+    public func configure(speaker: Bool, subwoofer: Bool) {
+        wantsSpeaker = speaker
+        wantsSubwoofer = subwoofer
+        if speaker || subwoofer { watchDeviceList() }
         reconcile()
     }
 
@@ -69,6 +79,13 @@ public final class ControllerSpeakerEngine: ObservableObject {
     public func setStereo(_ newStereo: Bool) {
         stereo = newStereo
         ring.setParameters(gain: gain, mono: !stereo)
+    }
+
+    /// With the subwoofer on, the speaker leaves everything below this to the
+    /// grips. Nil plays it full range.
+    public func setCrossover(_ hz: Float?) {
+        crossoverHz = hz
+        ring.setHighPass(hz, sampleRate: Float(tapSampleRate))
     }
 
     /// Tries again after the user has dealt with a permission or a cable.
@@ -87,17 +104,18 @@ public final class ControllerSpeakerEngine: ObservableObject {
     /// Brings the running state in line with what is wanted and what is
     /// plugged in. Runs on every device-list change.
     private func reconcile() {
-        guard wantsOutput else {
+        guard wantsSpeaker || wantsSubwoofer else {
             stop()
             status = .idle
             return
         }
 
         let found = CoreAudioQuery.dualSenseOutputDevice()
-        if outputDeviceID != kAudioObjectUnknown {
+        if let running {
             // Our own aggregate device coming and going lands here too.
-            if found?.id == outputDeviceID { return }
+            if found?.id == activeDeviceID, running == (wantsSpeaker, wantsSubwoofer) { return }
             stop()
+            status = .idle
         }
 
         guard let device = found else {
@@ -131,6 +149,8 @@ public final class ControllerSpeakerEngine: ObservableObject {
     // MARK: - Start / stop
 
     private func start(device: (id: AudioObjectID, name: String)) {
+        let speaker = wantsSpeaker
+        let subwoofer = wantsSubwoofer
         deviceName = device.name
         ring.reset()
         ring.setParameters(gain: gain, mono: !stereo)
@@ -143,11 +163,12 @@ public final class ControllerSpeakerEngine: ObservableObject {
         }
 
         let tapDescription = CATapDescription(stereoGlobalTapButExcludeProcesses: [ownProcess])
-        tapDescription.name = "Single Sense Controller Speaker"
+        tapDescription.name = "Single Sense Controller Audio"
         tapDescription.isPrivate = true
-        // Silences the Mac only while the tap is actually being read, so a
-        // stall or a crash cannot leave the system muted.
-        tapDescription.muteBehavior = .mutedWhenTapped
+        // The speaker moves the sound, so the Mac goes quiet — only while the
+        // tap is actually read, so a stall or a crash cannot leave it muted.
+        // A subwoofer on its own adds to the Mac instead.
+        tapDescription.muteBehavior = speaker ? .mutedWhenTapped : .unmuted
 
         var newTapID = AudioObjectID(kAudioObjectUnknown)
         let tapStatus = AudioHardwareCreateProcessTap(tapDescription, &newTapID)
@@ -160,9 +181,11 @@ public final class ControllerSpeakerEngine: ObservableObject {
         tapID = newTapID
 
         let sampleRate = CoreAudioQuery.tapSampleRate(newTapID) ?? 48_000
+        tapSampleRate = sampleRate
+        ring.setHighPass(crossoverHz, sampleRate: Float(sampleRate))
 
         let aggregate: [String: Any] = [
-            kAudioAggregateDeviceNameKey: "SingleSenseSpeakerTap",
+            kAudioAggregateDeviceNameKey: "SingleSenseControllerTap",
             kAudioAggregateDeviceUIDKey: UUID().uuidString,
             kAudioAggregateDeviceIsPrivateKey: true,
             kAudioAggregateDeviceTapAutoStartKey: true,
@@ -180,20 +203,32 @@ public final class ControllerSpeakerEngine: ObservableObject {
         }
         aggregateDeviceID = newAggregateID
 
-        switch makeOutputUnit(device: device.id, sampleRate: sampleRate) {
-        case .success(let unit):
-            outputUnit = unit
-            outputDeviceID = device.id
-        case .failure(let message):
-            stop()
-            status = .failed(message)
-            return
+        if speaker {
+            // Stereo at the tap's rate: the unit converts to the controller's
+            // rate and fills channels 1-2, leaving the haptic channels alone.
+            switch makeControllerOutputUnit(
+                device: device.id,
+                sampleRate: sampleRate,
+                channels: 2,
+                callback: speakerRenderCallback,
+                refCon: Unmanaged.passUnretained(ring).toOpaque()
+            ) {
+            case .success(let unit):
+                outputUnit = unit
+            case .failure(let message):
+                stop()
+                status = .failed(message)
+                return
+            }
         }
 
         let ring = self.ring
+        let coils = VoiceCoilEngine.shared
         var newProcID: AudioDeviceIOProcID?
         let procStatus = AudioDeviceCreateIOProcIDWithBlock(&newProcID, newAggregateID, nil) { _, input, _, _, _ in
-            ring.write(UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer(mutating: input)))
+            let buffers = UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer(mutating: input))
+            if speaker { ring.write(buffers) }
+            if subwoofer { coils.feedSubwoofer(buffers, sampleRate: sampleRate) }
         }
         guard procStatus == noErr, let validProcID = newProcID else {
             stop()
@@ -211,8 +246,11 @@ public final class ControllerSpeakerEngine: ObservableObject {
             return
         }
 
+        activeDeviceID = device.id
+        running = (speaker, subwoofer)
         status = .running
-        print("[Single Sense Speaker] Playing system audio on \(device.name) at \(Int(sampleRate)) Hz")
+        let roles = [speaker ? "speaker" : nil, subwoofer ? "subwoofer" : nil].compactMap { $0 }.joined(separator: " + ")
+        print("[Single Sense Speaker] System audio to \(device.name) (\(roles)) at \(Int(sampleRate)) Hz")
     }
 
     /// Tears down whatever exists, tap first so the Mac is unmuted before the
@@ -232,94 +270,13 @@ public final class ControllerSpeakerEngine: ObservableObject {
             tapID = AudioObjectID(kAudioObjectUnknown)
         }
         if let unit = outputUnit {
-            AudioOutputUnitStop(unit)
-            AudioUnitUninitialize(unit)
-            AudioComponentInstanceDispose(unit)
+            disposeControllerOutputUnit(unit)
             outputUnit = nil
         }
-        outputDeviceID = AudioObjectID(kAudioObjectUnknown)
+        activeDeviceID = AudioObjectID(kAudioObjectUnknown)
+        running = nil
         ring.reset()
         if status == .running { status = .idle }
-    }
-
-    private enum UnitResult {
-        case success(AudioUnit)
-        case failure(String)
-    }
-
-    /// An output-only HAL unit on the controller. Output-only matters: the
-    /// controller also has a microphone, and opening it would raise the
-    /// microphone indicator and a permission prompt for nothing.
-    private func makeOutputUnit(device: AudioObjectID, sampleRate: Double) -> UnitResult {
-        var description = AudioComponentDescription(
-            componentType: kAudioUnitType_Output,
-            componentSubType: kAudioUnitSubType_HALOutput,
-            componentManufacturer: kAudioUnitManufacturer_Apple,
-            componentFlags: 0,
-            componentFlagsMask: 0
-        )
-        guard let component = AudioComponentFindNext(nil, &description) else {
-            return .failure("The system output unit is unavailable")
-        }
-        var maybeUnit: AudioUnit?
-        guard AudioComponentInstanceNew(component, &maybeUnit) == noErr, let unit = maybeUnit else {
-            return .failure("Could not create the controller output")
-        }
-
-        func fail(_ what: String, _ status: OSStatus) -> UnitResult {
-            AudioUnitUninitialize(unit)
-            AudioComponentInstanceDispose(unit)
-            return .failure("\(what) (code \(status))")
-        }
-
-        var disable: UInt32 = 0
-        var enable: UInt32 = 1
-        let uint32Size = UInt32(MemoryLayout<UInt32>.size)
-        AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &disable, uint32Size)
-        AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, 0, &enable, uint32Size)
-
-        var deviceID = device
-        var status = AudioUnitSetProperty(
-            unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0,
-            &deviceID, UInt32(MemoryLayout<AudioObjectID>.size)
-        )
-        guard status == noErr else { return fail("Could not open the controller as a sound device", status) }
-
-        // Interleaved stereo float at the tap's rate; the unit converts to
-        // whatever the controller runs at and fills channels 1-2, leaving
-        // the haptic channels silent.
-        var format = AudioStreamBasicDescription(
-            mSampleRate: sampleRate,
-            mFormatID: kAudioFormatLinearPCM,
-            mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
-            mBytesPerPacket: 8,
-            mFramesPerPacket: 1,
-            mBytesPerFrame: 8,
-            mChannelsPerFrame: 2,
-            mBitsPerChannel: 32,
-            mReserved: 0
-        )
-        status = AudioUnitSetProperty(
-            unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0,
-            &format, UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
-        )
-        guard status == noErr else { return fail("The controller refused the audio format", status) }
-
-        var callback = AURenderCallbackStruct(
-            inputProc: speakerRenderCallback,
-            inputProcRefCon: Unmanaged.passUnretained(ring).toOpaque()
-        )
-        status = AudioUnitSetProperty(
-            unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0,
-            &callback, UInt32(MemoryLayout<AURenderCallbackStruct>.size)
-        )
-        guard status == noErr else { return fail("Could not attach the playback callback", status) }
-
-        status = AudioUnitInitialize(unit)
-        guard status == noErr else { return fail("Could not prepare the controller output", status) }
-        status = AudioOutputUnitStart(unit)
-        guard status == noErr else { return fail("Could not start the controller output", status) }
-        return .success(unit)
     }
 
     private static func isPermissionError(_ status: OSStatus) -> Bool {
@@ -345,6 +302,99 @@ private let speakerRenderCallback: AURenderCallback = { refCon, _, _, _, frameCo
     return noErr
 }
 
+// MARK: - Controller output unit
+
+enum ControllerOutputResult {
+    case success(AudioUnit)
+    case failure(String)
+}
+
+/// An output-only HAL unit on the controller, started and pulling from
+/// `callback` in interleaved float. A client format with fewer channels than
+/// the controller's four fills the first ones.
+///
+/// Output-only matters: the controller also has a microphone, and opening it
+/// would raise the microphone indicator and a permission prompt for nothing.
+/// Several units on the same device are mixed by Core Audio.
+func makeControllerOutputUnit(
+    device: AudioObjectID,
+    sampleRate: Double,
+    channels: UInt32,
+    callback: @escaping AURenderCallback,
+    refCon: UnsafeMutableRawPointer
+) -> ControllerOutputResult {
+    var description = AudioComponentDescription(
+        componentType: kAudioUnitType_Output,
+        componentSubType: kAudioUnitSubType_HALOutput,
+        componentManufacturer: kAudioUnitManufacturer_Apple,
+        componentFlags: 0,
+        componentFlagsMask: 0
+    )
+    guard let component = AudioComponentFindNext(nil, &description) else {
+        return .failure("The system output unit is unavailable")
+    }
+    var maybeUnit: AudioUnit?
+    guard AudioComponentInstanceNew(component, &maybeUnit) == noErr, let unit = maybeUnit else {
+        return .failure("Could not create the controller output")
+    }
+
+    func fail(_ what: String, _ status: OSStatus) -> ControllerOutputResult {
+        AudioUnitUninitialize(unit)
+        AudioComponentInstanceDispose(unit)
+        return .failure("\(what) (code \(status))")
+    }
+
+    var disable: UInt32 = 0
+    var enable: UInt32 = 1
+    let uint32Size = UInt32(MemoryLayout<UInt32>.size)
+    AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &disable, uint32Size)
+    AudioUnitSetProperty(unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, 0, &enable, uint32Size)
+
+    var deviceID = device
+    var status = AudioUnitSetProperty(
+        unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0,
+        &deviceID, UInt32(MemoryLayout<AudioObjectID>.size)
+    )
+    guard status == noErr else { return fail("Could not open the controller as a sound device", status) }
+
+    let bytesPerFrame = 4 * channels
+    var format = AudioStreamBasicDescription(
+        mSampleRate: sampleRate,
+        mFormatID: kAudioFormatLinearPCM,
+        mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
+        mBytesPerPacket: bytesPerFrame,
+        mFramesPerPacket: 1,
+        mBytesPerFrame: bytesPerFrame,
+        mChannelsPerFrame: channels,
+        mBitsPerChannel: 32,
+        mReserved: 0
+    )
+    status = AudioUnitSetProperty(
+        unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0,
+        &format, UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
+    )
+    guard status == noErr else { return fail("The controller refused the audio format", status) }
+
+    var renderCallback = AURenderCallbackStruct(inputProc: callback, inputProcRefCon: refCon)
+    status = AudioUnitSetProperty(
+        unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0,
+        &renderCallback, UInt32(MemoryLayout<AURenderCallbackStruct>.size)
+    )
+    guard status == noErr else { return fail("Could not attach the playback callback", status) }
+
+    status = AudioUnitInitialize(unit)
+    guard status == noErr else { return fail("Could not prepare the controller output", status) }
+    status = AudioOutputUnitStart(unit)
+    guard status == noErr else { return fail("Could not start the controller output", status) }
+    return .success(unit)
+}
+
+func disposeControllerOutputUnit(_ unit: AudioUnit) {
+    AudioOutputUnitStop(unit)
+    AudioUnitUninitialize(unit)
+    AudioComponentInstanceDispose(unit)
+}
+
 // MARK: - Ring buffer
 
 /// Stereo FIFO between the tap's I/O thread and the controller's render
@@ -366,6 +416,9 @@ final class SpeakerRingBuffer {
     private var primed = false
     private var gain: Float = 1
     private var mono = true
+    /// Fourth-order (Linkwitz-Riley) high-pass per channel, when a crossover
+    /// hands the bass to the subwoofer.
+    private var highPass: (left1: Biquad, left2: Biquad, right1: Biquad, right2: Biquad)?
 
     init(capacity: Int = 16_384, target: Int = 2_048, ceiling: Int = 6_144) {
         self.capacity = capacity
@@ -391,6 +444,17 @@ final class SpeakerRingBuffer {
         os_unfair_lock_lock(lock)
         self.gain = gain
         self.mono = mono
+        os_unfair_lock_unlock(lock)
+    }
+
+    func setHighPass(_ cutoff: Float?, sampleRate: Float) {
+        let filters = cutoff.flatMap { hz -> (Biquad, Biquad, Biquad, Biquad)? in
+            guard hz.isFinite, hz > 0, sampleRate > hz * 2 else { return nil }
+            let stage = Biquad.highPass(cutoff: hz, sampleRate: sampleRate)
+            return (stage, stage, stage, stage)
+        }
+        os_unfair_lock_lock(lock)
+        highPass = filters.map { (left1: $0.0, left2: $0.1, right1: $0.2, right2: $0.3) }
         os_unfair_lock_unlock(lock)
     }
 
@@ -466,6 +530,11 @@ final class SpeakerRingBuffer {
                 let m = (l + r) * 0.5
                 l = m
                 r = m
+            }
+            if var filters = highPass {
+                l = filters.left2.process(filters.left1.process(l))
+                r = mono ? l : filters.right2.process(filters.right1.process(r))
+                highPass = filters
             }
             out[i * 2] = l * gain
             out[i * 2 + 1] = r * gain

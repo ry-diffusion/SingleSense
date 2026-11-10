@@ -59,6 +59,8 @@
 		5E00000000000000000000A3 /* ControllerSpeakerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A2 /* ControllerSpeakerEngine.swift */; };
 		5E00000000000000000000A5 /* SpeakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A4 /* SpeakerView.swift */; };
 		5E00000000000000000000A7 /* SpeakerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000A6 /* SpeakerTests.swift */; };
+		5E00000000000000000000B1 /* VoiceCoilHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000B0 /* VoiceCoilHaptics.swift */; };
+		5E00000000000000000000B3 /* VoiceCoilTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00000000000000000000B2 /* VoiceCoilTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -127,6 +129,8 @@
 		5E00000000000000000000A2 /* ControllerSpeakerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerSpeakerEngine.swift; sourceTree = "<group>"; };
 		5E00000000000000000000A4 /* SpeakerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerView.swift; sourceTree = "<group>"; };
 		5E00000000000000000000A6 /* SpeakerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerTests.swift; sourceTree = "<group>"; };
+		5E00000000000000000000B0 /* VoiceCoilHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCoilHaptics.swift; sourceTree = "<group>"; };
+		5E00000000000000000000B2 /* VoiceCoilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCoilTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +208,7 @@
 				5E0000000000000000000027 /* SettingsStore.swift */,
 				5E0000000000000000000029 /* TrackpadGestures.swift */,
 				5E000000000000000000002B /* TrackpadService.swift */,
+				5E00000000000000000000B0 /* VoiceCoilHaptics.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -318,6 +323,7 @@
 				5E000000000000000000005E /* QueueTests.swift */,
 				5E0000000000000000000060 /* SendDeduplicationTests.swift */,
 				5E00000000000000000000A6 /* SpeakerTests.swift */,
+				5E00000000000000000000B2 /* VoiceCoilTests.swift */,
 				5E0000000000000000000062 /* SessionSettingsTests.swift */,
 				5E0000000000000000000064 /* ValidationTests.swift */,
 			);
@@ -494,6 +500,7 @@
 				5E00000000000000000000A1 /* SpeakerConfiguration.swift in Sources */,
 				5E00000000000000000000A3 /* ControllerSpeakerEngine.swift in Sources */,
 				5E00000000000000000000A5 /* SpeakerView.swift in Sources */,
+				5E00000000000000000000B1 /* VoiceCoilHaptics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,6 +516,7 @@
 				5E000000000000000000005F /* QueueTests.swift in Sources */,
 				5E0000000000000000000061 /* SendDeduplicationTests.swift in Sources */,
 				5E00000000000000000000A7 /* SpeakerTests.swift in Sources */,
+				5E00000000000000000000B3 /* VoiceCoilTests.swift in Sources */,
 				5E0000000000000000000063 /* SessionSettingsTests.swift in Sources */,
 				5E0000000000000000000065 /* ValidationTests.swift in Sources */,
 			);

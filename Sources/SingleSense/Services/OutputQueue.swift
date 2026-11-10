@@ -13,6 +13,9 @@ struct DSHardwareState {
     var forceSend: Bool
     /// Speaker routing, or nil to leave the controller's audio block alone.
     var audioRoute: DSAudioRoute? = nil
+    /// The voice coils are playing USB audio, so the rumble emulation must
+    /// let go of them.
+    var audioHaptics = false
     /// How many times this state has already failed to reach the device.
     var attempts: Int = 0
 }

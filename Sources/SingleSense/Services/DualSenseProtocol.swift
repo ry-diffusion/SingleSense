@@ -43,6 +43,9 @@ public enum DualSenseProtocol {
     /// dualsensectl, which does.
     public enum ValidFlag0 {
         public static let compatibleVibration: UInt8 = 1 << 0
+        /// Makes the actuators follow the rumble bytes and ignore the USB
+        /// audio channels 3-4 — SDL calls it "disable audio haptics". It has
+        /// to be clear for anything played on those channels to be felt.
         public static let hapticsSelect: UInt8 = 1 << 1
         /// Without this the firmware ignores the right trigger effect block
         /// entirely, however well-formed it is.

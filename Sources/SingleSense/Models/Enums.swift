@@ -255,6 +255,17 @@ public enum MusicHapticsStyle: String, Codable, CaseIterable, Identifiable {
         case .beatPunch: return "One short thump per beat."
         }
     }
+
+    /// The same choice when the voice coils carry the music, where the
+    /// first two play the audio itself rather than a level.
+    public var coilDetail: String {
+        switch self {
+        case .off: return "The grips stay still."
+        case .bassKick: return "The bass line itself, played on both grips."
+        case .fullRange: return "The bass itself on the left grip, the low mids on the right."
+        case .beatPunch: return "A synthesised thump per beat, not the music itself."
+        }
+    }
 }
 
 /// Shaping for a rumble motor driven by a normalised signal.

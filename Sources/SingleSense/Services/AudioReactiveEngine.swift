@@ -148,6 +148,9 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
     private var tapID: AudioObjectID = 0
     private var aggregateDeviceID: AudioObjectID = 0
     private var procID: AudioDeviceIOProcID?
+    /// The tap's real rate, for the voice-coil feed. Written before the
+    /// I/O starts, read only on the I/O thread after that.
+    private var tapSampleRate: Double = 48_000
 
     private let sampleQueue = DispatchQueue(label: "com.singlesense.audio.samples", qos: .userInitiated)
 
@@ -267,6 +270,8 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
             return
         }
 
+        tapSampleRate = CoreAudioQuery.tapSampleRate(newTapID) ?? 48_000
+
         var newProcID: AudioDeviceIOProcID?
         let procStatus = AudioDeviceCreateIOProcIDWithBlock(&newProcID, newDeviceID, nil) { [weak self] inNow, inInputData, inInputTime, outOutputData, inOutputTime in
             self?.handleAudioInput(inInputData: inInputData, inInputTime: inInputTime)
@@ -364,6 +369,9 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
                 mono[i] = sum * scale
             }
         }
+
+        // The voice coils play the signal itself rather than its analysis.
+        mono.withUnsafeBufferPointer { VoiceCoilEngine.shared.feedMusic($0, sampleRate: tapSampleRate) }
 
         let presentationTime: TimeInterval
         if inInputTime.pointee.mFlags.contains(.hostTimeValid) {

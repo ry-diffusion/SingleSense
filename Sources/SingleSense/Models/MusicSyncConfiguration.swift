@@ -24,6 +24,9 @@ public struct MusicSyncConfiguration: Codable, Equatable {
     public var hapticsStyle: MusicHapticsStyle = .off
     /// Ceiling for the motors; the music decides how much of it is used.
     public var hapticsIntensity: Double = 0.6
+    /// Over USB, send the music itself to the voice coils in the grips
+    /// instead of turning it into motor levels.
+    public var hapticsOnVoiceCoils: Bool = true
 
     public var sensitivity: Double = 1.0        // 0.25 ... 4.0
     public var smoothing: Double = 0.35         // 0.0 (snappy) ... 1.0 (damped)
@@ -36,6 +39,13 @@ public struct MusicSyncConfiguration: Codable, Equatable {
     public var isDrivingLightbar: Bool { isEnabled && drivesLightbar }
     public var isDrivingPlayerLEDs: Bool { isEnabled && playerLEDStyle != .fixed }
     public var isDrivingRumble: Bool { isEnabled && hapticsStyle != .off && hapticsIntensity > 0 }
+
+    /// What the coils should play, given whether they can be reached. Nil
+    /// leaves the haptics to the motors.
+    public func coilMusicStyle(coilsAvailable: Bool) -> CoilMusicStyle? {
+        guard isDrivingRumble, hapticsOnVoiceCoils, coilsAvailable else { return nil }
+        return CoilMusicStyle(hapticsStyle)
+    }
 
     /// True when the analysis is worth its CPU: the tap only needs to be open
     /// while something is listening to it.
@@ -112,6 +122,7 @@ public struct MusicSyncConfiguration: Codable, Equatable {
             try? container.decodeIfPresent(Double.self, forKey: .hapticsIntensity),
             0...1, fallback.hapticsIntensity
         )
+        hapticsOnVoiceCoils = (try? container.decodeIfPresent(Bool.self, forKey: .hapticsOnVoiceCoils)) ?? fallback.hapticsOnVoiceCoils
         sensitivity = Self.clamped(
             try? container.decodeIfPresent(Double.self, forKey: .sensitivity),
             0.25...4.0, fallback.sensitivity

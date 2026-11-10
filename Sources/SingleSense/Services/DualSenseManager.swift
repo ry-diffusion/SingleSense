@@ -10,6 +10,7 @@ public final class DualSenseManager: ObservableObject {
     @Published public var lightbarConfig = LightbarConfiguration()
     @Published public var musicSyncConfig = MusicSyncConfiguration()
     @Published public var speakerConfig = SpeakerConfiguration()
+    @Published public var subwooferConfig = SubwooferConfiguration()
     @Published public var leftTriggerConfig = SingleTriggerConfig()
     @Published public var rightTriggerConfig = SingleTriggerConfig()
     @Published public var triggersLinked: Bool = false
@@ -39,6 +40,9 @@ public final class DualSenseManager: ObservableObject {
     /// hands the sound back to the jack instead of leaving the speaker live.
     private var speakerRouteTouched = false
 
+    /// Edge detector for the beat thump Music Sync plays on the coils.
+    private var coilBeatHigh = false
+
     private var dynoLeftTrigger = SingleTriggerConfig(mode: .off)
     private var dynoRightTrigger = SingleTriggerConfig(mode: .off)
 
@@ -57,6 +61,7 @@ public final class DualSenseManager: ObservableObject {
         restoreSession()
         setupGameControllerMonitoring()
         setupHIDDriver()
+        setupVoiceCoilHandover()
         setupRainbowEngine()
         setupPersistence()
     }
@@ -71,6 +76,7 @@ public final class DualSenseManager: ObservableObject {
         lightbarConfig = saved.lightbar
         musicSyncConfig = saved.musicSync
         speakerConfig = saved.speaker
+        subwooferConfig = saved.subwoofer
         leftTriggerConfig = saved.leftTrigger.sanitized()
         rightTriggerConfig = saved.rightTrigger.sanitized()
         triggersLinked = saved.triggersLinked
@@ -98,11 +104,27 @@ public final class DualSenseManager: ObservableObject {
     }
 
     /// Persists whenever the working state settles.
+    /// The report has to change when the coils open or close: the rumble
+    /// emulation holds the actuators until it is told to let go.
+    private func setupVoiceCoilHandover() {
+        VoiceCoilEngine.shared.$status
+            .map { $0 == .running }
+            .removeDuplicates()
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.updateHardwareLightbar(color: self.currentColor, force: true)
+            }
+            .store(in: &cancellables)
+    }
+
     private func setupPersistence() {
         let manager = Publishers.MergeMany(
             $lightbarConfig.map { _ in () }.eraseToAnyPublisher(),
             $musicSyncConfig.map { _ in () }.eraseToAnyPublisher(),
             $speakerConfig.map { _ in () }.eraseToAnyPublisher(),
+            $subwooferConfig.map { _ in () }.eraseToAnyPublisher(),
             $leftTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
             $rightTriggerConfig.map { _ in () }.eraseToAnyPublisher(),
             $triggersLinked.map { _ in () }.eraseToAnyPublisher(),
@@ -139,6 +161,7 @@ public final class DualSenseManager: ObservableObject {
         settings.lightbar = lightbarConfig
         settings.musicSync = musicSyncConfig
         settings.speaker = speakerConfig
+        settings.subwoofer = subwooferConfig
         settings.leftTrigger = leftTriggerConfig
         settings.rightTrigger = rightTriggerConfig
         settings.triggersLinked = triggersLinked
@@ -177,7 +200,8 @@ public final class DualSenseManager: ObservableObject {
         HIDDriver.shared.stop()
         RainbowEngine.shared.stop()
         AudioReactiveEngine.shared.setActive(false)
-        ControllerSpeakerEngine.shared.setActive(false)
+        ControllerSpeakerEngine.shared.configure(speaker: false, subwoofer: false)
+        VoiceCoilEngine.shared.stop()
         GCController.stopWirelessControllerDiscovery()
     }
     
@@ -645,6 +669,7 @@ public final class DualSenseManager: ObservableObject {
                 leftTrigger: isTriggerDynoTestActive ? dynoLeftTrigger : leftTriggerConfig,
                 rightTrigger: isTriggerDynoTestActive ? dynoRightTrigger : rightTriggerConfig,
                 audioRoute: currentAudioRoute(),
+                audioHaptics: VoiceCoilEngine.shared.status == .running,
                 forceSend: force
             )
             publishOnNextRunLoopTurn { [weak self] in
@@ -662,6 +687,21 @@ public final class DualSenseManager: ObservableObject {
     /// music is not driving the motors.
     private func currentMusicRumble() -> (left: Float, right: Float)? {
         guard musicSyncConfig.isDrivingRumble else { return nil }
+        // A subwoofer already has the grips; layering the music's rumble on
+        // top would only muddy the bass.
+        if subwooferConfig.isEnabled && VoiceCoilEngine.shared.status.canPlay { return nil }
+        // On the coils the music is felt directly, so the motors stay out of
+        // it — except the beat mode, which the coils play as one thump each.
+        if let coilStyle = musicSyncConfig.coilMusicStyle(coilsAvailable: VoiceCoilEngine.shared.status.canPlay) {
+            if coilStyle == .beats {
+                let beat = AudioReactiveEngine.shared.levels.beat > 0.5
+                if beat && !coilBeatHigh {
+                    VoiceCoilEngine.shared.punch(strength: Float(musicSyncConfig.hapticsIntensity))
+                }
+                coilBeatHigh = beat
+            }
+            return nil
+        }
         let levels = AudioReactiveEngine.shared.levels
         return musicSyncConfig.rumble(
             bass: levels.bass,
@@ -693,18 +733,31 @@ public final class DualSenseManager: ObservableObject {
         audio.smoothing = Float(musicSyncConfig.smoothing)
         audio.setActive(musicSyncConfig.needsAudioCapture)
 
+        let coils = VoiceCoilEngine.shared
+        coils.setMusic(
+            style: subwooferConfig.isEnabled ? nil : musicSyncConfig.coilMusicStyle(coilsAvailable: true),
+            gain: Float(musicSyncConfig.hapticsIntensity)
+        )
+
         applyLightbarConfiguration(force: force)
     }
 
-    /// Starts or stops playback through the controller and re-sends the
-    /// routing that goes with it.
+    /// Starts or stops the controller's speaker and subwoofer, and re-sends
+    /// the routing that goes with them.
     public func applySpeakerConfiguration(force: Bool = false) {
         let speaker = ControllerSpeakerEngine.shared
+        let subwoofer = subwooferConfig.isEnabled
         if speakerConfig.isEnabled { speakerRouteTouched = true }
         speaker.setGain(speakerConfig.gain)
         speaker.setStereo(controllerState.headphonesConnected)
-        speaker.setActive(speakerConfig.isEnabled)
-        updateHardwareLightbar(color: currentColor, force: force)
+        // Speaker and grips together make a 2.1 pair: the speaker gives the
+        // bass up to the grips instead of straining at it.
+        speaker.setCrossover(subwoofer ? Float(subwooferConfig.crossoverHz) : nil)
+        VoiceCoilEngine.shared.setSubwoofer(subwoofer ? subwooferConfig.settings : nil)
+        speaker.configure(speaker: speakerConfig.isEnabled, subwoofer: subwoofer)
+        // Music Sync gives the grips up to the subwoofer; this re-resolves
+        // that and re-sends the report.
+        applyMusicSyncConfiguration(force: force)
     }
 
     /// The audio block for the next report, or nil to leave the controller's
@@ -815,6 +868,13 @@ public final class DualSenseManager: ObservableObject {
         updateHardwareLightbar(color: currentColor)
     }
     
+    /// Plays a preset on the voice coils, falling back to CoreHaptics (and
+    /// from there to a motor pulse) when the controller is not on USB.
+    public func playHaptic(_ preset: HapticPreset, pan: Float = 0) {
+        if VoiceCoilEngine.shared.play(preset, pan: pan) { return }
+        playHapticPattern(patternType: preset.fallbackPattern)
+    }
+
     public func playHapticPattern(patternType: String) {
         guard let engine = hapticEngine else {
             // Fallback to brief rumble pulse

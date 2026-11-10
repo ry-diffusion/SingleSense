@@ -449,7 +449,8 @@ public final class HIDDriver {
         rightMotor: UInt8,
         leftTrigger: SingleTriggerConfig,
         rightTrigger: SingleTriggerConfig,
-        audioRoute: DSAudioRoute? = nil
+        audioRoute: DSAudioRoute? = nil,
+        audioHaptics: Bool = false
     ) -> [UInt8] {
         var report = [UInt8](repeating: 0, count: layout.totalSize)
         report[0] = layout.reportID
@@ -466,9 +467,15 @@ public final class HIDDriver {
         //
         // The two trigger bits are not optional: without them the firmware
         // discards the effect blocks below however well-formed they are.
-        var validFlag0 = DualSenseProtocol.ValidFlag0.hapticsSelect
-            | DualSenseProtocol.ValidFlag0.rightTriggerMotorEnable
+        //
+        // `hapticsSelect` hands the actuators to the rumble emulation. While
+        // the app plays waveforms on the USB haptic channels it must stay
+        // clear, or the firmware ignores them.
+        var validFlag0 = DualSenseProtocol.ValidFlag0.rightTriggerMotorEnable
             | DualSenseProtocol.ValidFlag0.leftTriggerMotorEnable
+        if !audioHaptics {
+            validFlag0 |= DualSenseProtocol.ValidFlag0.hapticsSelect
+        }
         var validFlag2 = DualSenseProtocol.ValidFlag2.ledBrightnessControlEnable
         if useVibrationV2 {
             validFlag2 |= DualSenseProtocol.ValidFlag2.compatibleVibration2
@@ -645,6 +652,7 @@ public final class HIDDriver {
         leftTrigger: SingleTriggerConfig,
         rightTrigger: SingleTriggerConfig,
         audioRoute: DSAudioRoute? = nil,
+        audioHaptics: Bool = false,
         forceSend: Bool = false
     ) {
         let state = DSHardwareState(
@@ -657,7 +665,8 @@ public final class HIDDriver {
             leftTrigger: leftTrigger,
             rightTrigger: rightTrigger,
             forceSend: forceSend,
-            audioRoute: audioRoute
+            audioRoute: audioRoute,
+            audioHaptics: audioHaptics
         )
 
         lock.lock()
@@ -682,7 +691,8 @@ public final class HIDDriver {
             rightMotor: state.rightMotor,
             leftTrigger: state.leftTrigger,
             rightTrigger: state.rightTrigger,
-            audioRoute: state.audioRoute
+            audioRoute: state.audioRoute,
+            audioHaptics: state.audioHaptics
         )
 
         // Deduplicate before the sequence number and CRC go in, otherwise

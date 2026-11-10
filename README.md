@@ -41,17 +41,30 @@ Two automatic modes that earn their keep day to day:
 
 **The rumble motors**, if you want to *feel* the music: bass goes to the heavy motor on the left, treble to the light one on the right. The intensity slider is a ceiling, and the music decides how much of it gets used moment to moment. It ships off, because continuous rumble drains the battery noticeably faster.
 
+Over USB, **Feel it through the voice coils** (on by default) sends the music itself to the actuators in the grips instead of turning it into motor levels: *Bass Kick* plays the actual bass line on both grips, *Full Range* puts the bass on the left and the low mids on the right. Over Bluetooth the motors carry it as before.
+
 > The first time, macOS will ask for **System Audio Recording** permission. Single Sense uses Apple's native Core Audio Process Taps to listen to the system mix directly — no screen or video recording permission is needed.
 
-### 🔊 The controller as a speaker
+### 🔊 The controller as a speaker and a subwoofer
 
-Switch on **Controller Speaker** and whatever your Mac is playing moves to the DualSense: its built-in speaker, or headphones plugged into its jack. The sound is moved, not copied — the Mac goes quiet while it's on and comes back the moment you switch it off.
+In **Speaker & Subwoofer**, switch on the speaker and whatever your Mac is playing moves to the DualSense: its built-in speaker, or headphones plugged into its jack. The sound is moved, not copied — the Mac goes quiet while it's on and comes back the moment you switch it off.
 
 - **Speaker** gets a mono mix of both channels, so nothing panned hard left goes missing
 - **Headphones** in the controller's jack get full stereo; plug or unplug them and the sound follows
 - Its own volume slider, on top of the Mac's
 
-It needs a **USB cable**: over Bluetooth macOS doesn't see the controller as a sound device. It uses the same **System Audio Recording** permission as Music Sync.
+Switch on **Use the Grips as a Subwoofer** and the voice coils in the grips play the bass of whatever is playing — the actual bass line, through a proper crossover, at the music's own level.
+
+- With the speaker **off**, your Mac keeps playing and the grips add the bass underneath
+- With the speaker **on**, it's a 2.1 pair in your hands: the speaker takes everything above the crossover, the grips everything below
+- **Crossover** from 60 to 200 Hz, its own **level**, and **Boost deep bass**, which adds the octave above notes too deep for the coils to move
+- Music Sync's rumble steps aside while it's on
+
+Both need a **USB cable**: over Bluetooth macOS doesn't see the controller as a sound device. They use the same **System Audio Recording** permission as Music Sync.
+
+### 〰️ Voice-coil haptics
+
+The DualSense's real haptics are two voice-coil actuators in the grips; the "rumble motors" are the firmware imitating old motors on them. Over USB, **Haptics & Vibration** plays waveforms straight into the coils: a crisp click, a heavy thud, a heartbeat, a rapid burst, a wood knock, gravel footsteps alternating between your hands, rain and an explosion. Pick the left grip, the right or both, and set the strength. Without the cable they fall back to CoreHaptics.
 
 ### 🎯 Adaptive triggers
 

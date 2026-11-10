@@ -6,16 +6,18 @@ public struct SpeakerView: View {
     @ObservedObject var manager = DualSenseManager.shared
     @ObservedObject var controllerState = DualSenseManager.shared.controllerState
     @ObservedObject var engine = ControllerSpeakerEngine.shared
+    @ObservedObject var coils = VoiceCoilEngine.shared
 
     public init() {}
 
     private var speaker: SpeakerConfiguration { manager.speakerConfig }
+    private var subwoofer: SubwooferConfiguration { manager.subwooferConfig }
 
     public var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 masterSwitch
-                if speaker.isEnabled { statusCallout }
+                if speaker.isEnabled || subwoofer.isEnabled { statusCallout }
 
                 VStack(spacing: 16) {
                     volumeSection
@@ -23,6 +25,8 @@ public struct SpeakerView: View {
                 }
                 .disabled(!speaker.isEnabled)
                 .opacity(speaker.isEnabled ? 1 : 0.55)
+
+                subwooferSection
             }
             .padding(20)
         }
@@ -68,7 +72,7 @@ public struct SpeakerView: View {
 
     private var statusBadge: some View {
         let descriptor: (String, Color) = {
-            guard speaker.isEnabled else { return ("Off", .secondary) }
+            guard speaker.isEnabled || subwoofer.isEnabled else { return ("Off", .secondary) }
             switch engine.status {
             case .idle: return ("Idle", .secondary)
             case .waitingForController: return ("Waiting for USB", .orange)
@@ -221,5 +225,111 @@ public struct SpeakerView: View {
         .padding(16)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         .cornerRadius(12)
+    }
+
+    // MARK: - Subwoofer
+
+    private func subwooferBinding<Value>(_ keyPath: WritableKeyPath<SubwooferConfiguration, Value>) -> Binding<Value> {
+        Binding(
+            get: { manager.subwooferConfig[keyPath: keyPath] },
+            set: { newValue in
+                manager.subwooferConfig[keyPath: keyPath] = newValue
+                manager.applySpeakerConfiguration()
+            }
+        )
+    }
+
+    private var subwooferSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: subwooferBinding(\.isEnabled)) {
+                Text("Use the Grips as a Subwoofer")
+                    .font(.headline.weight(.bold))
+            }
+            .toggleStyle(.switch)
+
+            Text(speaker.isEnabled
+                 ? "A 2.1 pair in your hands: the speaker plays everything above the crossover, the voice coils in the grips play everything below it."
+                 : "Your Mac keeps playing as usual and the voice coils in the grips add the bass underneath — the actual bass line at the music's own level, not a vibration pattern.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if subwoofer.isEnabled, !coils.status.canPlay {
+                Label("Needs the USB cable: over Bluetooth the grips can't be reached as a sound device.",
+                      systemImage: "cable.connector")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                labelledSlider(
+                    "Level",
+                    value: subwooferBinding(\.level),
+                    range: 0...1,
+                    readout: "\(Int((subwoofer.level * 100).rounded()))%"
+                )
+                labelledSlider(
+                    "Crossover",
+                    value: subwooferBinding(\.crossoverHz),
+                    range: SubwooferConfiguration.crossoverRange,
+                    step: 5,
+                    readout: "\(Int(subwoofer.crossoverHz)) Hz"
+                )
+                Text("Lower keeps the grips to the deepest notes; higher lets kick drums and bass guitar through too.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Toggle(isOn: subwooferBinding(\.boostDeepBass)) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Boost deep bass")
+                            .font(.callout.weight(.medium))
+                        Text("The coils barely move below about 50 Hz, so the deepest notes get their octave added — still the same note, now something you can feel.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .toggleStyle(.switch)
+
+                Label("While this is on, Music Sync's rumble steps aside. The bass reaches the grips about 20 ms after the Mac's speakers.",
+                      systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .disabled(!subwoofer.isEnabled)
+            .opacity(subwoofer.isEnabled ? 1 : 0.55)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .cornerRadius(12)
+    }
+
+    private func labelledSlider(
+        _ title: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double? = nil,
+        readout: String
+    ) -> some View {
+        HStack(spacing: 10) {
+            Text(title)
+                .font(.callout.weight(.medium))
+                .frame(width: 80, alignment: .leading)
+            if let step {
+                Slider(value: value, in: range, step: step)
+                    .accessibilityLabel("Subwoofer \(title.lowercased())")
+            } else {
+                Slider(value: value, in: range)
+                    .accessibilityLabel("Subwoofer \(title.lowercased())")
+            }
+            Text(readout)
+                .font(.callout.monospacedDigit())
+                .foregroundColor(.secondary)
+                .frame(width: 56, alignment: .trailing)
+        }
     }
 }

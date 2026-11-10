@@ -2,7 +2,9 @@ import SwiftUI
 
 public struct HapticsLabView: View {
     @ObservedObject var manager = DualSenseManager.shared
+    @ObservedObject var coils = VoiceCoilEngine.shared
     @State private var syncMotors: Bool = false
+    @State private var coilPan: Float = 0
     @State private var isTestContinuousActive: Bool = false
     
     public init() {}
@@ -122,38 +124,108 @@ public struct HapticsLabView: View {
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
                 .cornerRadius(12)
                 
-                // CoreHaptics Sensory Patterns
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("CoreHaptics Sensory Presets")
-                        .font(.headline.weight(.bold))
-                    
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
-                        hapticButton(name: "Crisp Click", icon: "hand.tap.fill", pattern: "click")
-                        hapticButton(name: "Heavy Thud", icon: "arrow.down.to.line.compact", pattern: "thud")
-                        hapticButton(name: "Heartbeat Pulse", icon: "heart.fill", pattern: "heartbeat")
-                        hapticButton(name: "Rapid Burst", icon: "burst.fill", pattern: "burst")
-                    }
-                }
-                .padding(16)
-                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-                .cornerRadius(12)
+                voiceCoilSection
             }
             .padding(20)
         }
     }
     
-    private func hapticButton(name: String, icon: String, pattern: String) -> some View {
+    // MARK: - Voice coils
+
+    private var voiceCoilSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Voice-Coil Haptics")
+                    .font(.headline.weight(.bold))
+                Spacer()
+                coilStatusBadge
+            }
+
+            Text(coils.status.canPlay
+                 ? "Waveforms played straight into the two actuators in the grips — the same hardware the motors only imitate, so clicks are sharp, textures have grain and each grip can do something different."
+                 : "Over USB these play straight into the actuators in the grips. Without the cable they fall back to CoreHaptics, and the effects marked with a dot are only approximated.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
+                ForEach(HapticPreset.allCases) { preset in
+                    hapticButton(preset)
+                }
+            }
+
+            HStack(spacing: 14) {
+                Text("Grip")
+                    .font(.callout.weight(.medium))
+                Picker("Grip", selection: $coilPan) {
+                    Text("Left").tag(Float(-1))
+                    Text("Both").tag(Float(0))
+                    Text("Right").tag(Float(1))
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 220)
+
+                Text("Strength")
+                    .font(.callout.weight(.medium))
+                Slider(value: $coils.strength, in: 0.1...1)
+                    .accessibilityLabel("Voice-coil strength")
+                Text("\(Int((coils.strength * 100).rounded()))%")
+                    .font(.callout.monospacedDigit())
+                    .foregroundColor(.secondary)
+                    .frame(width: 44, alignment: .trailing)
+            }
+            .disabled(!coils.status.canPlay)
+            .opacity(coils.status.canPlay ? 1 : 0.55)
+
+            if case .failed(let message) = coils.status {
+                Label(message, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .cornerRadius(12)
+    }
+
+    private var coilStatusBadge: some View {
+        let descriptor: (String, Color) = {
+            switch coils.status {
+            case .unavailable: return ("USB only — using CoreHaptics", .secondary)
+            case .ready: return ("Ready", .green)
+            case .running: return ("Active", .green)
+            case .failed: return ("Error", .red)
+            }
+        }()
+        return HStack(spacing: 5) {
+            Circle().fill(descriptor.1).frame(width: 7, height: 7)
+            Text(descriptor.0)
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(descriptor.1)
+        }
+    }
+
+    private func hapticButton(_ preset: HapticPreset) -> some View {
         Button(action: {
-            manager.playHapticPattern(patternType: pattern)
+            manager.playHaptic(preset, pan: coilPan)
         }) {
             HStack(spacing: 8) {
-                Image(systemName: icon)
+                Image(systemName: preset.iconName)
                     .font(.body)
                     .foregroundColor(.accentColor)
-                Text(name)
+                    .frame(width: 20)
+                Text(preset.rawValue)
                     .font(.callout.weight(.semibold))
                     .foregroundColor(.primary)
                 Spacer(minLength: 0)
+                if preset.needsVoiceCoils && !coils.status.canPlay {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 6, height: 6)
+                        .accessibilityLabel("approximated without the voice coils")
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)

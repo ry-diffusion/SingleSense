@@ -8,6 +8,7 @@ import SwiftUI
 public struct MusicSyncView: View {
     @ObservedObject var manager = DualSenseManager.shared
     @ObservedObject var audioEngine = AudioReactiveEngine.shared
+    @ObservedObject var coils = VoiceCoilEngine.shared
 
     @State private var hexInput: String = ""
 
@@ -256,11 +257,33 @@ public struct MusicSyncView: View {
             .pickerStyle(SegmentedPickerStyle())
             .labelsHidden()
 
-            Text(music.hapticsStyle.detail)
+            Text(music.hapticsOnVoiceCoils && coils.status.canPlay
+                 ? music.hapticsStyle.coilDetail
+                 : music.hapticsStyle.detail)
                 .font(.caption)
                 .foregroundColor(.secondary)
 
             if music.hapticsStyle != .off {
+                Toggle(isOn: Binding(
+                    get: { manager.musicSyncConfig.hapticsOnVoiceCoils },
+                    set: { newValue in
+                        manager.musicSyncConfig.hapticsOnVoiceCoils = newValue
+                        manager.applyMusicSyncConfiguration()
+                    }
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Feel it through the voice coils")
+                            .font(.callout.weight(.medium))
+                        Text(coils.status.canPlay
+                             ? "The music itself goes to the actuators in the grips — the bass line, not just its level. The motors stay out of it."
+                             : "Needs a USB cable. Until then the motors carry the music.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .toggleStyle(.switch)
+
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Intensity Ceiling")

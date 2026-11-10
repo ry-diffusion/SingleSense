@@ -6,7 +6,7 @@ public enum NavigationItem: String, CaseIterable, Identifiable {
     case musicSync = "Music Sync"
     case triggers = "Adaptive Triggers"
     case haptics = "Haptics & Vibration"
-    case speaker = "Controller Speaker"
+    case speaker = "Speaker & Subwoofer"
     case motion = "Motion & Gyro"
     case trackpad = "Trackpad"
     case profiles = "Profiles"
