@@ -119,10 +119,12 @@ extension LightbarConfiguration {
     public func playerLEDMask(
         music: MusicSyncConfiguration = MusicSyncConfiguration(),
         level: Float = 0,
-        beat: Float = 0
+        beat: Float = 0,
+        kick: Float = 0,
+        snare: Float = 0
     ) -> UInt8 {
         // "Off" brightness darkens the row whatever the pattern says.
         guard !playerLEDBrightness.extinguishesLEDs else { return 0 }
-        return music.playerLEDMask(level: level, beat: beat) ?? playerLEDMode.bitmask
+        return music.playerLEDMask(level: level, beat: beat, kick: kick, snare: snare) ?? playerLEDMode.bitmask
     }
 }

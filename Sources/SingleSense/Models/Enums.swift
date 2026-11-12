@@ -198,6 +198,8 @@ public enum PlayerLEDAudioStyle: String, Codable, CaseIterable, Identifiable {
     case centerSpread = "Center Spread"
     /// All five lamps flash on each detected beat.
     case beatPulse = "Beat Pulse"
+    /// Left pair for kick, right pair for snare, dark between hits.
+    case kickSnare = "Kick / Snare"
 
     public var id: String { rawValue }
 
@@ -207,6 +209,7 @@ public enum PlayerLEDAudioStyle: String, Codable, CaseIterable, Identifiable {
         case .vuMeter: return "Lamps fill left to right with loudness."
         case .centerSpread: return "Grows outward from the centre lamp."
         case .beatPulse: return "All five snap on with every beat."
+        case .kickSnare: return "Left pair flashes on kick; right pair flashes on snare."
         }
     }
 }

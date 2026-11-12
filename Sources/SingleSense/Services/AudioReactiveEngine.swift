@@ -14,8 +14,10 @@ public struct AudioLevels: Equatable {
     public var treble: Float = 0
     /// Broadband loudness, useful for driving brightness on its own.
     public var overall: Float = 0
-    /// Decays from 1 immediately after a detected bass onset.
+    /// Short pulses for detected percussion, independent of sustained level.
     public var beat: Float = 0
+    public var kick: Float = 0
+    public var snare: Float = 0
 
     public static let silent = AudioLevels()
 }
@@ -90,6 +92,100 @@ struct BandNormalizer {
             overall: shape(rawOverall, overall),
             beat: 0
         )
+    }
+}
+
+/// Removes a sustained level from a frequency band or the overall mix. A
+/// rolling lower percentile follows the song's floor while recent peaks set
+/// the range above it, so a constant loud passage does not pin a meter high.
+struct RollingDynamicsNormalizer {
+    private static let windowSize = 96 // About one second at the FFT hop rate.
+    private var recent: [Float] = []
+
+    mutating func reset() { recent.removeAll(keepingCapacity: true) }
+
+    mutating func normalize(_ energy: Float, gain: Float) -> Float {
+        guard energy.isFinite, energy >= 0, gain.isFinite, gain > 0 else { return 0 }
+        recent.append(energy)
+        if recent.count > Self.windowSize { recent.removeFirst() }
+
+        let sorted = recent.sorted()
+        let floor = sorted[Int(Double(sorted.count - 1) * 0.2)]
+        let peak = sorted[sorted.count - 1]
+        // Do not turn tiny changes in a nearly flat bass line into full-scale
+        // motion. The floor tracks volume changes without learning each kick.
+        let span = max(peak - floor, floor * 0.25, BandNormalizer.absoluteFloor)
+        let dynamic = max(0, (energy - floor) / span)
+        return min(powf(min(dynamic * gain, 1), 0.7), 1)
+    }
+}
+
+struct PercussiveHits: Equatable {
+    var kick = false
+    var snare = false
+    static let none = PercussiveHits()
+}
+
+/// Detects kick and snare attacks before automatic gain control flattens a
+/// loud, compressed passage into nearly constant band levels.
+struct PercussiveOnsetDetector {
+    private struct BandAttack {
+        var previous: Float = 0
+        var average: Float = 0
+        var lastAttackEnergy: Float = 0
+        var isArmed = true
+        var isPrimed = false
+
+        mutating func update(_ energy: Float) -> Bool {
+            guard energy.isFinite, energy >= 0 else { return false }
+            guard isPrimed else {
+                previous = energy
+                average = energy
+                isPrimed = true
+                return false
+            }
+            let reference = max(average, BandNormalizer.absoluteFloor)
+            let rise = energy - previous
+            if !isArmed && (energy < reference * 1.1 || energy < lastAttackEnergy * 0.65) {
+                isArmed = true
+            }
+            let attack = isArmed
+                && energy > BandNormalizer.absoluteFloor * 2
+                && energy > reference * 1.6
+                && rise > reference * 0.7
+
+            // A falling level lowers the reference promptly, while a loud
+            // transient raises it slowly enough to reveal the next attack.
+            average += (energy - average) * (energy > average ? 0.05 : 0.12)
+            previous = energy
+            if attack {
+                isArmed = false
+                lastAttackEnergy = energy
+            }
+            return attack
+        }
+    }
+
+    private var bass = BandAttack()
+    private var mid = BandAttack()
+    private var treble = BandAttack()
+    private var lastOnset: TimeInterval = -.infinity
+
+    mutating func reset() { self = PercussiveOnsetDetector() }
+
+    mutating func detect(bass bassEnergy: Float, mid midEnergy: Float, treble trebleEnergy: Float, at time: TimeInterval) -> PercussiveHits {
+        guard time.isFinite else { return .none }
+        let kick = bass.update(bassEnergy)
+        let midAttack = mid.update(midEnergy)
+        let trebleAttack = treble.update(trebleEnergy)
+        // A snare is broadband; requiring both upper bands avoids treating
+        // a lone hi-hat or a sustained vocal as another beat.
+        guard time - lastOnset >= 0.08 else { return .none }
+        // A kick can be broadband too; give its bass attack precedence when
+        // both signatures occur in the same window.
+        let hits = PercussiveHits(kick: kick, snare: !kick && midAttack && trebleAttack)
+        if hits.kick || hits.snare { lastOnset = time }
+        return hits
     }
 }
 
@@ -178,8 +274,11 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
 
     private var envelope = AudioLevels.silent
     private var normalizer = BandNormalizer()
-    private var bassAverage: Float = 0
-    private var lastBeatTime: TimeInterval = 0
+    private var bassDynamics = RollingDynamicsNormalizer()
+    private var overallDynamics = RollingDynamicsNormalizer()
+    private var onsetDetector = PercussiveOnsetDetector()
+    private var lastKickTime: TimeInterval = -.infinity
+    private var lastSnareTime: TimeInterval = -.infinity
     private var lastPublishTime: TimeInterval = 0
 
     /// Presentation time of the first sample still sitting in `pendingSamples`.
@@ -328,8 +427,11 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
             guard let self = self else { return }
             self.envelope = .silent
             self.normalizer.reset()
-            self.bassAverage = 0
-            self.lastBeatTime = 0
+            self.bassDynamics.reset()
+            self.overallDynamics.reset()
+            self.onsetDetector.reset()
+            self.lastKickTime = -.infinity
+            self.lastSnareTime = -.infinity
             self.pendingSamples.removeAll(keepingCapacity: true)
             self.hasPendingTimeline = false
         }
@@ -393,6 +495,13 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         // gap so a dropped or restarted stream cannot skew every later frame.
         let expected = pendingStartTime + Double(pendingSamples.count) / Double(Self.sampleRate)
         if !hasPendingTimeline || abs(presentationTime - expected) > 0.05 {
+            if hasPendingTimeline {
+                onsetDetector.reset()
+                bassDynamics.reset()
+                overallDynamics.reset()
+                lastKickTime = -.infinity
+                lastSnareTime = -.infinity
+            }
             pendingSamples.removeAll(keepingCapacity: true)
             pendingStartTime = presentationTime
             hasPendingTimeline = true
@@ -407,7 +516,7 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         while pendingSamples.count >= frameSize {
             let frame = Array(pendingSamples[0..<frameSize])
             let frameTime = pendingStartTime + Double(frameSize) / Double(Self.sampleRate)
-            analyse(frame: frame)
+            analyse(frame: frame, at: frameTime)
             produced.append(AnalysisFrame(time: frameTime, levels: envelope))
 
             pendingSamples.removeFirst(hop)
@@ -438,7 +547,7 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         return frameQueue.drain(upTo: now)
     }
 
-    private func analyse(frame: [Float]) {
+    private func analyse(frame: [Float], at time: TimeInterval) {
         let n = Self.fftSize
         let half = n / 2
 
@@ -489,17 +598,20 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         let gain = storedSensitivity
         lock.unlock()
 
-        let normalized = normalizer.normalize(
+        var normalized = normalizer.normalize(
             bass: rawBass,
             mid: rawMid,
             treble: rawTreble,
             gain: gain
         )
+        normalized.bass = bassDynamics.normalize(rawBass, gain: gain)
+        normalized.overall = overallDynamics.normalize(max(rawBass, max(rawMid, rawTreble)), gain: gain)
 
-        updateEnvelope(target: normalized)
+        let hits = onsetDetector.detect(bass: rawBass, mid: rawMid, treble: rawTreble, at: time)
+        updateEnvelope(target: normalized, hits: hits, at: time)
     }
 
-    private func updateEnvelope(target: AudioLevels) {
+    private func updateEnvelope(target: AudioLevels, hits: PercussiveHits, at time: TimeInterval) {
         lock.lock()
         let smooth = storedSmoothing
         lock.unlock()
@@ -517,15 +629,10 @@ public final class AudioReactiveEngine: NSObject, ObservableObject {
         envelope.treble = follow(envelope.treble, target.treble)
         envelope.overall = follow(envelope.overall, target.overall)
 
-        // Onset detection on the bass band, with a refractory period so a
-        // sustained note does not register as a run of beats.
-        bassAverage += (target.bass - bassAverage) * 0.05
-        let now = CACurrentMediaTime()
-        if target.bass > bassAverage * 1.4, target.bass > 0.25, now - lastBeatTime > 0.12 {
-            lastBeatTime = now
-            envelope.beat = 1
-        } else {
-            envelope.beat = max(0, envelope.beat - 0.08)
-        }
+        if hits.kick { lastKickTime = time }
+        if hits.snare { lastSnareTime = time }
+        envelope.kick = time - lastKickTime < 0.05 ? 1 : 0
+        envelope.snare = time - lastSnareTime < 0.05 ? 1 : 0
+        envelope.beat = max(envelope.kick, envelope.snare)
     }
 }

@@ -44,7 +44,7 @@ extension DSHardwareState {
 }
 
 extension AudioLevels {
-    static func uniform(_ value: Float, beat: Float = 0) -> AudioLevels {
-        AudioLevels(bass: value, mid: value, treble: value, overall: value, beat: beat)
+    static func uniform(_ value: Float, beat: Float = 0, kick: Float = 0, snare: Float = 0) -> AudioLevels {
+        AudioLevels(bass: value, mid: value, treble: value, overall: value, beat: beat, kick: kick, snare: snare)
     }
 }

@@ -201,7 +201,7 @@ public struct MusicSyncView: View {
                 indicatorPreview
             }
 
-            Picker("", selection: Binding(
+            Picker("Pattern", selection: Binding(
                 get: { manager.musicSyncConfig.playerLEDStyle },
                 set: { newValue in
                     manager.musicSyncConfig.playerLEDStyle = newValue
@@ -212,12 +212,20 @@ public struct MusicSyncView: View {
                     Text(style.rawValue).tag(style)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
-            .labelsHidden()
+            .pickerStyle(.menu)
 
             Text(music.playerLEDStyle.detail)
                 .font(.caption)
                 .foregroundColor(.secondary)
+
+            if music.playerLEDStyle == .vuMeter || music.playerLEDStyle == .centerSpread {
+                Button("Use Kick / Snare pattern") {
+                    manager.musicSyncConfig.playerLEDStyle = .kickSnare
+                    manager.applyMusicSyncConfiguration(force: true)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
 
             if music.playerLEDStyle == .fixed {
                 Text("The row keeps the pattern set in Lightbar & LEDs.")
@@ -407,6 +415,8 @@ public struct MusicSyncView: View {
                 meterRow("Mid", levels.mid, .green)
                 meterRow("Treble", levels.treble, .blue)
                 meterRow("Beat", levels.beat, .purple)
+                meterRow("Kick", levels.kick, .orange)
+                meterRow("Snare", levels.snare, .cyan)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -444,7 +454,8 @@ public struct MusicSyncView: View {
     private var indicatorPreview: some View {
         let levels = audioEngine.displayLevels
         let mask = manager.lightbarConfig.playerLEDMask(
-            music: music, level: levels.overall, beat: levels.beat
+            music: music, level: levels.overall, beat: levels.beat,
+            kick: levels.kick, snare: levels.snare
         )
         let litCount = (0..<PlayerLEDIndicator.lampCount)
             .filter { (mask >> UInt8($0)) & 1 == 1 }.count
@@ -557,4 +568,3 @@ public struct MusicSyncView: View {
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.12)))
     }
 }
-

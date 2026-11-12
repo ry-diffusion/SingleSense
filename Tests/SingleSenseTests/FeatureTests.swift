@@ -56,6 +56,14 @@ final class PlayerLEDTests: XCTestCase {
         XCTAssertEqual(mask(.beatPulse, level: 0.0, beat: 1.0), 0x1F)
     }
 
+    func testKickAndSnareUseDifferentPairsAndGoDarkBetweenHits() {
+        let m = music(.kickSnare)
+        XCTAssertEqual(m.playerLEDMask(level: 1, beat: 1, kick: 0, snare: 0), 0x00)
+        XCTAssertEqual(m.playerLEDMask(level: 1, beat: 1, kick: 1, snare: 0), 0x03)
+        XCTAssertEqual(m.playerLEDMask(level: 1, beat: 1, kick: 0, snare: 1), 0x18)
+        XCTAssertEqual(m.playerLEDMask(level: 1, beat: 1, kick: 1, snare: 1), 0x1B)
+    }
+
     func testAudioStylesNeedMusicSyncSwitchedOn() {
         let c = lightbar()
         XCTAssertEqual(
@@ -291,5 +299,107 @@ final class BandNormalizerTests: XCTestCase {
         XCTAssertTrue(levels.bass.isFinite)
         XCTAssertTrue(levels.mid.isFinite)
         XCTAssertTrue(levels.treble.isFinite)
+    }
+}
+
+final class RollingDynamicsNormalizerTests: XCTestCase {
+    func testSustainedBassBecomesTheFloorAndKicksRiseAboveIt() {
+        var normalizer = RollingDynamicsNormalizer()
+        for _ in 0..<96 {
+            XCTAssertEqual(normalizer.normalize(0.10, gain: 1), 0, accuracy: 0.001)
+        }
+        XCTAssertEqual(normalizer.normalize(0.20, gain: 1), 1, accuracy: 0.001)
+        XCTAssertEqual(normalizer.normalize(0.10, gain: 1), 0, accuracy: 0.001)
+        XCTAssertEqual(normalizer.normalize(0.16, gain: 1), powf(0.6, 0.7), accuracy: 0.001)
+    }
+
+    func testFloorAdaptsWhenTheSongChangesLevel() {
+        var normalizer = RollingDynamicsNormalizer()
+        for _ in 0..<96 { _ = normalizer.normalize(0.10, gain: 1) }
+        for _ in 0..<96 { _ = normalizer.normalize(0.15, gain: 1) }
+        XCTAssertEqual(normalizer.normalize(0.15, gain: 1), 0, accuracy: 0.001)
+        XCTAssertGreaterThan(normalizer.normalize(0.22, gain: 1), 0.5)
+    }
+
+    func testNearlyFlatBassIsNotAmplifiedIntoAFullKick() {
+        var normalizer = RollingDynamicsNormalizer()
+        for _ in 0..<96 { _ = normalizer.normalize(0.10, gain: 1) }
+        XCTAssertLessThan(normalizer.normalize(0.102, gain: 1), 0.3)
+        normalizer.reset()
+        XCTAssertEqual(normalizer.normalize(0.10, gain: 1), 0)
+    }
+}
+
+final class PercussiveOnsetDetectorTests: XCTestCase {
+    func testRapidAlternatingKicksAndSnaresRemainDistinct() {
+        var detector = PercussiveOnsetDetector()
+        let step = 512.0 / 48_000.0
+        var detected: [Double] = []
+
+        for frame in 0..<300 {
+            let time = Double(frame) * step
+            // Alternate kick and snare roughly every 100 ms over a loud bass
+            // line. Normalised levels can remain near one the whole time.
+            let kick = frame % 19 == 0
+            let snare = frame % 19 == 9
+            let hits = detector.detect(
+                bass: kick ? 0.30 : 0.08,
+                mid: snare ? 0.18 : 0.04,
+                treble: snare ? 0.06 : 0.008,
+                at: time
+            )
+            if hits.kick || hits.snare { detected.append(time) }
+        }
+
+        XCTAssertEqual(detected.count, 31, "the first window primes the baseline")
+    }
+
+    func testSustainedBassAndQuietNoiseDoNotRetrigger() {
+        var detector = PercussiveOnsetDetector()
+        let step = 512.0 / 48_000.0
+        var sustainedHits = 0
+        for frame in 0..<300 {
+            let hits = detector.detect(bass: 0.08, mid: 0.04, treble: 0.008, at: Double(frame) * step)
+            if hits.kick || hits.snare {
+                sustainedHits += 1
+            }
+        }
+        XCTAssertEqual(sustainedHits, 0)
+
+        detector.reset()
+        for frame in 0..<300 {
+            XCTAssertEqual(detector.detect(bass: 0.001, mid: 0.001, treble: 0.001, at: Double(frame) * step), .none)
+        }
+    }
+
+    func testAHiHatOrMidOnlyAttackIsNotASnare() {
+        var detector = PercussiveOnsetDetector()
+        _ = detector.detect(bass: 0.001, mid: 0.02, treble: 0.006, at: 0)
+        XCTAssertEqual(detector.detect(bass: 0.001, mid: 0.02, treble: 0.08, at: 0.2), .none)
+        XCTAssertEqual(detector.detect(bass: 0.001, mid: 0.12, treble: 0.006, at: 0.4), .none)
+        XCTAssertEqual(detector.detect(bass: 0.001, mid: 0.02, treble: 0.006, at: 0.5), .none)
+        XCTAssertEqual(detector.detect(bass: 0.001, mid: 0.12, treble: 0.08, at: 0.6), PercussiveHits(snare: true))
+    }
+
+    func testRefractoryPeriodRejectsDoubleHitsAndResetAllowsRestart() {
+        var detector = PercussiveOnsetDetector()
+        _ = detector.detect(bass: 0.02, mid: 0, treble: 0, at: 0)
+        XCTAssertEqual(detector.detect(bass: 0.3, mid: 0, treble: 0, at: 1.0), PercussiveHits(kick: true))
+        XCTAssertEqual(detector.detect(bass: 0.02, mid: 0, treble: 0, at: 1.01), .none)
+        XCTAssertEqual(detector.detect(bass: 0.3, mid: 0, treble: 0, at: 1.05), .none)
+        detector.reset()
+        _ = detector.detect(bass: 0.02, mid: 0, treble: 0, at: 0)
+        XCTAssertEqual(detector.detect(bass: 0.3, mid: 0, treble: 0, at: 0.2), PercussiveHits(kick: true))
+    }
+
+    func testOrdinaryBassFluctuationDoesNotBecomeContinuousBeat() {
+        var detector = PercussiveOnsetDetector()
+        for frame in 0..<300 {
+            let bass: Float = frame % 8 < 4 ? 0.08 : 0.13
+            XCTAssertEqual(
+                detector.detect(bass: bass, mid: 0.04, treble: 0.008, at: Double(frame) * 512 / 48_000),
+                .none
+            )
+        }
     }
 }

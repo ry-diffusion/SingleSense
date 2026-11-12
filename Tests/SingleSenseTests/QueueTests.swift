@@ -132,6 +132,24 @@ final class AnalysisFrameQueueTests: XCTestCase {
         XCTAssertEqual(queue.depth, 4, "frames not yet due must remain queued")
     }
 
+    func testKickAndSnareSurviveBetweenTicksThenClearDuringAGap() {
+        var queue = AnalysisFrameQueue()
+        queue.append(contentsOf: [
+            AnalysisFrame(time: 0.01, levels: .uniform(0.5, beat: 1, kick: 1)),
+            AnalysisFrame(time: 0.02, levels: .uniform(0.5)),
+            AnalysisFrame(time: 0.03, levels: .uniform(0.5, beat: 1, snare: 1))
+        ])
+        let first = queue.drain(upTo: 0.04)
+        XCTAssertEqual(first.kick, 1)
+        XCTAssertEqual(first.snare, 1)
+        XCTAssertEqual(first.beat, 1)
+        let held = queue.drain(upTo: 0.10)
+        XCTAssertEqual(held.overall, 0.5)
+        XCTAssertEqual(held.kick, 0)
+        XCTAssertEqual(held.snare, 0)
+        XCTAssertEqual(held.beat, 0)
+    }
+
     func testAStalledConsumerCostsLatencyNotMemory() {
         var queue = AnalysisFrameQueue()
         for i in 0..<500 {

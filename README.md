@@ -39,6 +39,8 @@ Two automatic modes that earn their keep day to day:
 
 **The five player LEDs**, as a meter — filling from the left, growing outward from the centre, or flashing on the beat. Leave it on *Fixed Pattern* and the row keeps the player number you set in Lightbar.
 
+Choose **Kick / Snare** to flash the left pair on a kick and the right pair on a snare, with the row dark between hits. This follows percussion rather than overall loudness, which can stay high throughout a compressed song.
+
 **The rumble motors**, if you want to *feel* the music: bass goes to the heavy motor on the left, treble to the light one on the right. The intensity slider is a ceiling, and the music decides how much of it gets used moment to moment. It ships off, because continuous rumble drains the battery noticeably faster.
 
 Over USB, **Feel it through the voice coils** (on by default) sends the music itself to the actuators in the grips instead of turning it into motor levels: *Bass Kick* plays the actual bass line on both grips, *Full Range* puts the bass on the left and the low mids on the right. Over Bluetooth the motors carry it as before.

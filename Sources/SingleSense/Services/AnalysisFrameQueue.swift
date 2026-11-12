@@ -40,27 +40,38 @@ struct AnalysisFrameQueue {
 
     /// Drains every frame due by `now`, in order.
     ///
-    /// Continuous bands take the newest value, but `beat` is peak-held across
-    /// the whole drained span: a beat landing between two 60 Hz ticks has to
-    /// survive to the output, otherwise the haptics skip it.
+    /// Continuous bands take the newest value, but percussion pulses are
+    /// peak-held across the drained span so a 60 Hz tick cannot skip them.
     mutating func drain(upTo now: TimeInterval) -> AudioLevels {
         var latest: AudioLevels?
         var beatPeak: Float = 0
+        var kickPeak: Float = 0
+        var snarePeak: Float = 0
 
         while let first = frames.first, first.time <= now {
             frames.removeFirst()
             beatPeak = max(beatPeak, first.levels.beat)
+            kickPeak = max(kickPeak, first.levels.kick)
+            snarePeak = max(snarePeak, first.levels.snare)
             latest = first.levels
         }
 
         if var result = latest {
             result.beat = beatPeak
+            result.kick = kickPeak
+            result.snare = snarePeak
             lastDelivered = result
             lastDeliveredTime = now
             return result
         }
 
-        // Nothing due. Hold briefly to ride out jitter, then fall silent.
+        // Hold continuous levels through jitter, but never latch a transient
+        // at full strength while the producer is briefly late.
+        if now - lastDeliveredTime > 0.05 {
+            lastDelivered.beat = 0
+            lastDelivered.kick = 0
+            lastDelivered.snare = 0
+        }
         if now - lastDeliveredTime > Self.staleAfter {
             lastDelivered = .silent
         }

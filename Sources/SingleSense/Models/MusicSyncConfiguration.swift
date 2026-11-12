@@ -17,7 +17,7 @@ public struct MusicSyncConfiguration: Codable, Equatable {
     public var lightbarStyle: MusicSyncStyle = .spectrum
 
     /// `.fixed` leaves the indicator row on the pattern chosen in Lightbar.
-    public var playerLEDStyle: PlayerLEDAudioStyle = .centerSpread
+    public var playerLEDStyle: PlayerLEDAudioStyle = .kickSnare
 
     /// Off by default: continuous rumble is intrusive and eats the battery, so
     /// it is something the user opts into rather than out of.
@@ -91,7 +91,7 @@ public struct MusicSyncConfiguration: Codable, Equatable {
 
     /// The indicator row the music is asking for, or nil when the row is not
     /// music-driven and should keep its fixed pattern.
-    public func playerLEDMask(level: Float, beat: Float) -> UInt8? {
+    public func playerLEDMask(level: Float, beat: Float, kick: Float = 0, snare: Float = 0) -> UInt8? {
         guard isDrivingPlayerLEDs else { return nil }
 
         switch playerLEDStyle {
@@ -103,6 +103,10 @@ public struct MusicSyncConfiguration: Codable, Equatable {
             return PlayerLEDIndicator.centredPatterns[PlayerLEDIndicator.lamps(for: level)]
         case .beatPulse:
             return beat > 0.35 ? 0x1F : 0x00
+        case .kickSnare:
+            let left: UInt8 = kick > 0.5 ? 0x03 : 0
+            let right: UInt8 = snare > 0.5 ? 0x18 : 0
+            return left | right
         }
     }
 

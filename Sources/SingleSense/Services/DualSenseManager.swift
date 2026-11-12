@@ -720,7 +720,9 @@ public final class DualSenseManager: ObservableObject {
         return lightbarConfig.playerLEDMask(
             music: musicSyncConfig,
             level: levels.overall,
-            beat: levels.beat
+            beat: levels.beat,
+            kick: levels.kick,
+            snare: levels.snare
         )
     }
 
